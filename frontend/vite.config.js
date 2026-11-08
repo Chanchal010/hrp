@@ -24,13 +24,13 @@ export default defineConfig({
 			},
 			manifest: {
 				display: "standalone",
-				name: "Frappe HR",
-				short_name: "Frappe HR",
-				start_url: "/hrms",
-				scope: "/hrms",
-				id: "/hrms",
-				description: "Everyday HR & Payroll operations at your fingertips",
-				theme_color: "#ffffff",
+				name: "ServiceDialTM HRMS",
+				short_name: "ServiceDialTM",
+				start_url: "/hrmsp",
+				scope: "/",
+				id: "/hrmsp",
+				description: "ServiceDialTM HR & Payroll Operations",
+				theme_color: "#0f172a",
 				icons: [
 					{
 						src: "/assets/hrms/manifest/manifest-icon-192.maskable.png",

@@ -1,0 +1,39 @@
+name: Deploy to Production Droplet
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to DigitalOcean Droplet
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          port: ${{ secrets.DROPLET_PORT }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            echo "Starting deployment on Droplet..."
+            cd /home/frappe/frappe-bench/apps/hrms
+            git pull origin main
+
+            echo "Building frontend SPAs..."
+            yarn install
+            yarn build
+
+            cd /home/frappe/frappe-bench
+            echo "Building Desk assets..."
+            bench build --app hrms
+
+            echo "Migrating site database..."
+            bench --site hrp.servicedialtm.com migrate
+
+            echo "Restarting background workers and web server..."
+            sudo supervisorctl restart frappe-bench-web:*
+            sudo supervisorctl restart frappe-bench-workers:*
+
+            echo "Deployment completed successfully!"

@@ -1,11 +1,11 @@
 app_name = "hrms"
-app_title = "Frappe HR"
-app_publisher = "Frappe Technologies Pvt. Ltd."
-app_description = "Modern HR and Payroll Software"
-app_email = "contact@frappe.io"
+app_title = "ServiceDialTM HRMS"
+app_publisher = "ServiceDialTM"
+app_description = "ServiceDialTM Enterprise HR & Payroll System"
+app_email = "connect@servicedialtm.com"
 app_license = "GNU General Public License (v3)"
 required_apps = ["frappe/erpnext"]
-source_link = "http://github.com/frappe/hrms"
+source_link = "https://hrp.servicedialtm.com"
 app_logo_url = "/assets/hrms/images/frappe-hr-logo.svg"
 app_home = "/desk/hr-setup"
 
@@ -13,7 +13,7 @@ add_to_apps_screen = [
 	{
 		"name": "hrms",
 		"logo": "/assets/hrms/images/frappe-hr-logo.svg",
-		"title": "Frappe HR",
+		"title": "ServiceDialTM HRMS",
 		"route": app_home,
 		"setup_wizard_text": "Let's build a workplace your team will love.",
 		"has_permission": "hrms.hr.utils.check_app_permission",
@@ -85,6 +85,7 @@ website_generators = ["Job Opening"]
 
 website_route_rules = [
 	{"from_route": "/hrms/<path:app_path>", "to_route": "hrms"},
+	{"from_route": "/hrmsp/<path:app_path>", "to_route": "hrms"},
 	{"from_route": "/hr/<path:app_path>", "to_route": "roster"},
 ]
 # Jinja
