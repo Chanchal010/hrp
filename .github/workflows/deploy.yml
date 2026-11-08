@@ -35,10 +35,28 @@ jobs:
             echo "Migrating site database..."
             bench --site hrp.servicedialtm.com migrate
 
-            echo "Applying ServiceDialTM branding to Desk Website Settings..."
-            bench --site hrp.servicedialtm.com execute "frappe.db.set_single_value" --args "['Website Settings', 'app_name', 'ServiceDialTM HRMS']"
-            bench --site hrp.servicedialtm.com execute "frappe.db.set_single_value" --args "['Website Settings', 'app_logo', '/assets/hrms/images/servicedial-logo.webp']"
-            bench --site hrp.servicedialtm.com execute "frappe.db.set_single_value" --args "['Website Settings', 'favicon', '/assets/hrms/images/servicedial-favicon.png']"
+            echo "Permanently committing ServiceDialTM branding to Database..."
+            bench --site hrp.servicedialtm.com console << 'EOF'
+            ws = frappe.get_doc("Website Settings")
+            ws.app_name = "ServiceDialTM HRMS"
+            ws.app_logo = "/assets/hrms/images/servicedial-logo.webp"
+            ws.banner_image = "/assets/hrms/images/servicedial-logo.webp"
+            ws.favicon = "/assets/hrms/images/servicedial-favicon.png"
+            ws.save(ignore_permissions=True)
+
+            sys = frappe.get_doc("System Settings")
+            sys.app_name = "ServiceDialTM HRMS"
+            sys.save(ignore_permissions=True)
+
+            nav = frappe.get_doc("Navbar Settings")
+            nav.app_logo = "/assets/hrms/images/servicedial-logo.webp"
+            nav.save(ignore_permissions=True)
+
+            frappe.db.commit()
+            print("Branding committed successfully!")
+            EOF
+
+            sudo chmod -R 755 /home/frappe/frappe-bench/sites/assets/
             bench --site hrp.servicedialtm.com clear-cache
 
             echo "Restarting background workers and web server..."
