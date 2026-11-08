@@ -24,6 +24,17 @@ jobs:
             cd /home/frappe/frappe-bench/apps/hrms
             git pull origin main
 
+            echo "Installing ServiceDialTM login templates..."
+            if [ ! -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig ]; then
+              cp /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig 2>/dev/null || true
+              cp /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py.orig 2>/dev/null || true
+            fi
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/www/login.html /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/www/login.py /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py
+
+            mkdir -p /home/frappe/frappe-bench/sites/assets/hrms/images/
+            cp -r /home/frappe/frappe-bench/apps/hrms/hrms/public/images/* /home/frappe/frappe-bench/sites/assets/hrms/images/ 2>/dev/null || true
+
             echo "Building frontend SPAs..."
             yarn install
             yarn build
