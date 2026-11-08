@@ -53,24 +53,6 @@
 								{{ __("Welcome back! Please enter your details to continue.") }}
 							</p>
 
-							<!-- Role Switcher -->
-							<div class="flex items-center gap-6 mb-6">
-								<label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
-									<input type="radio" v-model="roleSelection" value="employee" class="hidden peer" />
-									<span class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-[#173C2C] flex items-center justify-center">
-										<span class="w-2 h-2 rounded-full bg-[#173C2C] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
-									</span>
-									<span>{{ __("As an Employee") }}</span>
-								</label>
-								<label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
-									<input type="radio" v-model="roleSelection" value="manager" class="hidden peer" />
-									<span class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-[#173C2C] flex items-center justify-center">
-										<span class="w-2 h-2 rounded-full bg-[#173C2C] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
-									</span>
-									<span>{{ __("As a Manager") }}</span>
-								</label>
-							</div>
-
 							<!-- Form Inputs -->
 							<form v-if="!user_pass_login_disabled.data" class="flex flex-col space-y-4" @submit.prevent="submit">
 								<div>
@@ -248,7 +230,6 @@ import FrappeHRLogo from "@/components/icons/FrappeHRLogo.vue"
 const email = ref(null)
 const password = ref(null)
 const showPassword = ref(false)
-const roleSelection = ref("employee")
 const errorMessage = ref("")
 
 const resetPassword = reactive({
