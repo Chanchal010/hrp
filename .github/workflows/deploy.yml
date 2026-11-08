@@ -18,6 +18,9 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
             echo "Starting deployment on Droplet..."
+            export PATH="/home/frappe/.local/bin:/usr/local/bin:$PATH"
+            source ~/.bashrc 2>/dev/null || true
+
             cd /home/frappe/frappe-bench/apps/hrms
             git pull origin main
 
@@ -31,6 +34,12 @@ jobs:
 
             echo "Migrating site database..."
             bench --site hrp.servicedialtm.com migrate
+
+            echo "Applying ServiceDialTM branding to Desk Website Settings..."
+            bench --site hrp.servicedialtm.com execute "frappe.db.set_single_value" --args "['Website Settings', 'app_name', 'ServiceDialTM HRMS']"
+            bench --site hrp.servicedialtm.com execute "frappe.db.set_single_value" --args "['Website Settings', 'app_logo', '/assets/hrms/images/servicedial-logo.webp']"
+            bench --site hrp.servicedialtm.com execute "frappe.db.set_single_value" --args "['Website Settings', 'favicon', '/assets/hrms/images/servicedial-favicon.png']"
+            bench --site hrp.servicedialtm.com clear-cache
 
             echo "Restarting background workers and web server..."
             sudo supervisorctl restart frappe-bench-web:*
