@@ -24,13 +24,16 @@ jobs:
             cd /home/frappe/frappe-bench/apps/hrms
             git pull origin main
 
-            echo "Installing ServiceDialTM login templates..."
-            if [ ! -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig ]; then
+            echo "Installing ServiceDialTM login template..."
+            if [ -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html ] && [ ! -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig ]; then
               cp /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig 2>/dev/null || true
-              cp /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py.orig 2>/dev/null || true
             fi
+            # Restore original login.py to preserve all core whitelist auth endpoints
+            if [ -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py.orig ]; then
+              cp /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py.orig /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py
+            fi
+            # Install custom branded split-screen login HTML
             cp /home/frappe/frappe-bench/apps/hrms/hrms/www/login.html /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html
-            cp /home/frappe/frappe-bench/apps/hrms/hrms/www/login.py /home/frappe/frappe-bench/apps/frappe/frappe/www/login.py
 
             mkdir -p /home/frappe/frappe-bench/sites/assets/hrms/images/
             cp -r /home/frappe/frappe-bench/apps/hrms/hrms/public/images/* /home/frappe/frappe-bench/sites/assets/hrms/images/ 2>/dev/null || true
@@ -70,5 +73,6 @@ jobs:
             echo "Restarting background workers and web server..."
             sudo supervisorctl restart frappe-bench-web:*
             sudo supervisorctl restart frappe-bench-workers:*
+            sudo supervisorctl status
 
             echo "Deployment completed successfully!"
