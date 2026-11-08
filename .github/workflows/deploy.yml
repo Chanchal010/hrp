@@ -24,7 +24,7 @@ jobs:
             cd /home/frappe/frappe-bench/apps/hrms
             git pull origin main
 
-            echo "Installing ServiceDialTM login template..."
+            echo "Installing ServiceDialTM login and splash templates..."
             if [ -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html ] && [ ! -f /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig ]; then
               cp /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html.orig 2>/dev/null || true
             fi
@@ -34,6 +34,19 @@ jobs:
             fi
             # Install custom branded split-screen login HTML
             cp /home/frappe/frappe-bench/apps/hrms/hrms/www/login.html /home/frappe/frappe-bench/apps/frappe/frappe/www/login.html
+
+            # Install custom branded Desk splash screen template
+            if [ -f /home/frappe/frappe-bench/apps/frappe/frappe/templates/includes/splash_screen.html ] && [ ! -f /home/frappe/frappe-bench/apps/frappe/frappe/templates/includes/splash_screen.html.orig ]; then
+              cp /home/frappe/frappe-bench/apps/frappe/frappe/templates/includes/splash_screen.html /home/frappe/frappe-bench/apps/frappe/frappe/templates/includes/splash_screen.html.orig 2>/dev/null || true
+            fi
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/templates/includes/splash_screen.html /home/frappe/frappe-bench/apps/frappe/frappe/templates/includes/splash_screen.html
+
+            # Replace default core logos so any hardcoded fallback displays our brand
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/servicedial-logo.webp /home/frappe/frappe-bench/apps/frappe/frappe/public/images/splash.png 2>/dev/null || true
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/servicedial-logo.png /home/frappe/frappe-bench/apps/frappe/frappe/public/images/frappe-framework-logo.png 2>/dev/null || true
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/servicedial-logo.svg /home/frappe/frappe-bench/apps/frappe/frappe/public/images/frappe-framework-logo.svg 2>/dev/null || true
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/servicedial-logo.svg /home/frappe/frappe-bench/apps/frappe/frappe/public/images/frappe-logo.svg 2>/dev/null || true
+            cp /home/frappe/frappe-bench/apps/hrms/hrms/public/images/servicedial-logo.png /home/frappe/frappe-bench/apps/frappe/frappe/public/images/frappe-logo.png 2>/dev/null || true
 
             mkdir -p /home/frappe/frappe-bench/sites/assets/hrms/images/
             cp -r /home/frappe/frappe-bench/apps/hrms/hrms/public/images/* /home/frappe/frappe-bench/sites/assets/hrms/images/ 2>/dev/null || true
@@ -59,11 +72,12 @@ jobs:
             frappe.db.set_single_value("Website Settings", "app_logo", "/assets/hrms/images/servicedial-logo.webp")
             frappe.db.set_single_value("Website Settings", "banner_image", "/assets/hrms/images/servicedial-logo.webp")
             frappe.db.set_single_value("Website Settings", "favicon", "/assets/hrms/images/servicedial-favicon.png")
+            frappe.db.set_single_value("Website Settings", "splash_image", "/assets/hrms/images/servicedial-logo.webp")
 
             frappe.db.set_single_value("Navbar Settings", "app_logo", "/assets/hrms/images/servicedial-logo.webp")
 
             frappe.db.commit()
-            print("Branding committed successfully!")
+            print("Branding and splash image committed successfully!")
             EOF
 
             sudo chmod -R 755 /home/frappe/frappe-bench/sites/assets/

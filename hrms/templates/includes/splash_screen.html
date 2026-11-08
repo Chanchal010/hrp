@@ -1,0 +1,123 @@
+<div class="centered splash" id="page-splash">
+  <div class="sd-splash-wrapper">
+    <div class="sd-splash-icon-box">
+      <img src="/assets/hrms/images/servicedial-logo.webp" alt="ServiceDialTM HRMS" class="sd-splash-logo" />
+    </div>
+    <div class="sd-splash-brand-text">
+      ServiceDial<span class="sd-splash-badge">TM</span>
+    </div>
+    <div class="sd-splash-subtitle">
+      Enterprise HR &amp; Payroll
+    </div>
+    <div class="sd-splash-loader-bar">
+      <div class="sd-splash-loader-progress"></div>
+    </div>
+  </div>
+
+  <style>
+    .centered.splash#page-splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      z-index: 99999;
+      margin: 0;
+      padding: 0;
+    }
+    .sd-splash-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .sd-splash-icon-box {
+      width: 76px;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 22px;
+      background: #ffffff;
+      box-shadow: 0 12px 30px -6px rgba(23, 60, 44, 0.16);
+      padding: 12px;
+      margin-bottom: 20px;
+      animation: sd-splash-pulse 2s ease-in-out infinite;
+      box-sizing: border-box;
+    }
+    .sd-splash-logo {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .sd-splash-brand-text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #111827;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+    }
+    .sd-splash-badge {
+      color: #173C2C;
+      font-size: 13.5px;
+      font-weight: 800;
+      margin-left: 1px;
+    }
+    .sd-splash-subtitle {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #6B7280;
+      margin-top: 5px;
+      letter-spacing: 0.2px;
+    }
+    .sd-splash-loader-bar {
+      margin-top: 26px;
+      width: 140px;
+      height: 3.5px;
+      background: #F3F4F6;
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .sd-splash-loader-progress {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 45%;
+      background: linear-gradient(90deg, #173C2C, #2E7D5E);
+      border-radius: 9999px;
+      animation: sd-splash-bar 1.5s ease-in-out infinite;
+    }
+    @keyframes sd-splash-pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 12px 30px -6px rgba(23, 60, 44, 0.16);
+      }
+      50% {
+        transform: scale(1.06);
+        box-shadow: 0 16px 36px -4px rgba(23, 60, 44, 0.26);
+      }
+    }
+    @keyframes sd-splash-bar {
+      0% {
+        left: -45%;
+      }
+      50% {
+        left: 35%;
+        width: 55%;
+      }
+      100% {
+        left: 100%;
+        width: 45%;
+      }
+    }
+  </style>
+</div>
