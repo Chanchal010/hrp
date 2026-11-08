@@ -35,22 +35,18 @@ jobs:
             echo "Migrating site database..."
             bench --site hrp.servicedialtm.com migrate
 
-            echo "Permanently committing ServiceDialTM branding to Database..."
+            echo "Applying ServiceDialTM branding to database..."
             bench --site hrp.servicedialtm.com console << 'EOF'
-            ws = frappe.get_doc("Website Settings")
-            ws.app_name = "ServiceDialTM HRMS"
-            ws.app_logo = "/assets/hrms/images/servicedial-logo.webp"
-            ws.banner_image = "/assets/hrms/images/servicedial-logo.webp"
-            ws.favicon = "/assets/hrms/images/servicedial-favicon.png"
-            ws.save(ignore_permissions=True)
+            frappe.db.set_single_value("System Settings", "app_name", "ServiceDialTM HRMS")
+            frappe.db.set_single_value("System Settings", "language", "en")
+            frappe.db.set_single_value("System Settings", "time_zone", "Asia/Kolkata")
 
-            sys = frappe.get_doc("System Settings")
-            sys.app_name = "ServiceDialTM HRMS"
-            sys.save(ignore_permissions=True)
+            frappe.db.set_single_value("Website Settings", "app_name", "ServiceDialTM HRMS")
+            frappe.db.set_single_value("Website Settings", "app_logo", "/assets/hrms/images/servicedial-logo.webp")
+            frappe.db.set_single_value("Website Settings", "banner_image", "/assets/hrms/images/servicedial-logo.webp")
+            frappe.db.set_single_value("Website Settings", "favicon", "/assets/hrms/images/servicedial-favicon.png")
 
-            nav = frappe.get_doc("Navbar Settings")
-            nav.app_logo = "/assets/hrms/images/servicedial-logo.webp"
-            nav.save(ignore_permissions=True)
+            frappe.db.set_single_value("Navbar Settings", "app_logo", "/assets/hrms/images/servicedial-logo.webp")
 
             frappe.db.commit()
             print("Branding committed successfully!")
@@ -58,6 +54,7 @@ jobs:
 
             sudo chmod -R 755 /home/frappe/frappe-bench/sites/assets/
             bench --site hrp.servicedialtm.com clear-cache
+            sudo systemctl reload nginx 2>/dev/null || true
 
             echo "Restarting background workers and web server..."
             sudo supervisorctl restart frappe-bench-web:*
