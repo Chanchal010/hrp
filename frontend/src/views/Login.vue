@@ -33,7 +33,7 @@
 
 			<div v-else class="flex h-screen w-screen flex-col justify-center bg-white">
 				<div class="flex flex-col mx-auto gap-3 items-center">
-					<FrappeHRLogo class="h-8 w-8" />
+					<FrappeHRLogo class="h-14 w-auto" />
 					<div class="text-3xl font-semibold text-gray-900 text-center">
 						{{ __("Login to ServiceDialTM HRMS") }}
 					</div>
