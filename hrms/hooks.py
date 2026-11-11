@@ -89,8 +89,11 @@ calendars = ["Leave Application"]
 website_generators = ["Job Opening"]
 
 website_route_rules = [
+	{"from_route": "/hrms", "to_route": "hrms"},
 	{"from_route": "/hrms/<path:app_path>", "to_route": "hrms"},
+	{"from_route": "/hrmsp", "to_route": "hrms"},
 	{"from_route": "/hrmsp/<path:app_path>", "to_route": "hrms"},
+	{"from_route": "/hr", "to_route": "roster"},
 	{"from_route": "/hr/<path:app_path>", "to_route": "roster"},
 ]
 # Jinja
