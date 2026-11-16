@@ -141,6 +141,158 @@ jobs:
                     user_doc.save(ignore_permissions=True)
                     print("Assigned full HR & Payroll roles to", user_id)
 
+            # 5. Enrich HR Setup and Payroll Workspaces with rich shortcuts and link cards
+            import json
+
+            # Update HR Setup Workspace
+            if frappe.db.exists("Workspace", "HR Setup"):
+                ws_hr = frappe.get_doc("Workspace", "HR Setup")
+                ws_hr.shortcuts = []
+                ws_hr.links = []
+                
+                hr_shortcuts = [
+                    {"label": "Employee", "type": "DocType", "link_to": "Employee", "doc_view": "List", "color": "Blue"},
+                    {"label": "Leave Application", "type": "DocType", "link_to": "Leave Application", "doc_view": "List", "color": "Green"},
+                    {"label": "Attendance", "type": "DocType", "link_to": "Attendance", "doc_view": "List", "color": "Orange"},
+                    {"label": "Department", "type": "DocType", "link_to": "Department", "doc_view": "List", "color": "Grey"},
+                    {"label": "Designation", "type": "DocType", "link_to": "Designation", "doc_view": "List", "color": "Grey"},
+                    {"label": "Job Opening", "type": "DocType", "link_to": "Job Opening", "doc_view": "List", "color": "Cyan"}
+                ]
+                for s in hr_shortcuts:
+                    ws_hr.append("shortcuts", s)
+                    
+                hr_links = [
+                    {"label": "Core Masters", "type": "Card Break"},
+                    {"label": "Employee", "type": "Link", "link_type": "DocType", "link_to": "Employee"},
+                    {"label": "Department", "type": "Link", "link_type": "DocType", "link_to": "Department"},
+                    {"label": "Designation", "type": "Link", "link_type": "DocType", "link_to": "Designation"},
+                    {"label": "Branch", "type": "Link", "link_type": "DocType", "link_to": "Branch"},
+                    {"label": "Company", "type": "Link", "link_type": "DocType", "link_to": "Company"},
+
+                    {"label": "Employee Lifecycle", "type": "Card Break"},
+                    {"label": "Employee Onboarding", "type": "Link", "link_type": "DocType", "link_to": "Employee Onboarding"},
+                    {"label": "Employee Promotion", "type": "Link", "link_type": "DocType", "link_to": "Employee Promotion"},
+                    {"label": "Employee Transfer", "type": "Link", "link_type": "DocType", "link_to": "Employee Transfer"},
+                    {"label": "Employee Separation", "type": "Link", "link_type": "DocType", "link_to": "Employee Separation"},
+
+                    {"label": "Recruitment", "type": "Card Break"},
+                    {"label": "Job Opening", "type": "Link", "link_type": "DocType", "link_to": "Job Opening"},
+                    {"label": "Job Applicant", "type": "Link", "link_type": "DocType", "link_to": "Job Applicant"},
+                    {"label": "Job Offer", "type": "Link", "link_type": "DocType", "link_to": "Job Offer"},
+                    {"label": "Interview", "type": "Link", "link_type": "DocType", "link_type_target": "Interview", "link_to": "Interview"}
+                ]
+                for l in hr_links:
+                    ws_hr.append("links", l)
+
+                ws_hr.content = json.dumps([
+                    {"id": "hdr_shortcuts", "type": "header", "data": {"text": "Quick Shortcuts", "level": 4, "col": 12}},
+                    {"id": "sc_emp", "type": "shortcut", "data": {"shortcut_name": "Employee", "col": 4}},
+                    {"id": "sc_leave", "type": "shortcut", "data": {"shortcut_name": "Leave Application", "col": 4}},
+                    {"id": "sc_att", "type": "shortcut", "data": {"shortcut_name": "Attendance", "col": 4}},
+                    {"id": "sc_dept", "type": "shortcut", "data": {"shortcut_name": "Department", "col": 4}},
+                    {"id": "sc_desig", "type": "shortcut", "data": {"shortcut_name": "Designation", "col": 4}},
+                    {"id": "sc_job", "type": "shortcut", "data": {"shortcut_name": "Job Opening", "col": 4}},
+                    {"id": "hdr_cards", "type": "header", "data": {"text": "Masters & Operations", "level": 4, "col": 12}},
+                    {"id": "card_masters", "type": "card", "data": {"card_name": "Core Masters", "col": 4}},
+                    {"id": "card_lifecycle", "type": "card", "data": {"card_name": "Employee Lifecycle", "col": 4}},
+                    {"id": "card_recruitment", "type": "card", "data": {"card_name": "Recruitment", "col": 4}}
+                ])
+                ws_hr.save(ignore_permissions=True)
+                print("Enriched HR Setup workspace!")
+
+            # Update Payroll Workspace
+            if frappe.db.exists("Workspace", "Payroll"):
+                ws_pay = frappe.get_doc("Workspace", "Payroll")
+                ws_pay.shortcuts = []
+                ws_pay.links = []
+                
+                pay_shortcuts = [
+                    {"label": "Payroll Entry", "type": "DocType", "link_to": "Payroll Entry", "doc_view": "List", "color": "Green"},
+                    {"label": "Salary Structure", "type": "DocType", "link_to": "Salary Structure", "doc_view": "List", "color": "Blue"},
+                    {"label": "Salary Component", "type": "DocType", "link_to": "Salary Component", "doc_view": "List", "color": "Orange"},
+                    {"label": "Salary Structure Assignment", "type": "DocType", "link_to": "Salary Structure Assignment", "doc_view": "List", "color": "Grey"},
+                    {"label": "Salary Slip", "type": "DocType", "link_to": "Salary Slip", "doc_view": "List", "color": "Cyan"}
+                ]
+                for s in pay_shortcuts:
+                    ws_pay.append("shortcuts", s)
+                    
+                pay_links = [
+                    {"label": "Payroll Setup", "type": "Card Break"},
+                    {"label": "Salary Component", "type": "Link", "link_type": "DocType", "link_to": "Salary Component"},
+                    {"label": "Salary Structure", "type": "Link", "link_type": "DocType", "link_to": "Salary Structure"},
+                    {"label": "Salary Structure Assignment", "type": "Link", "link_type": "DocType", "link_to": "Salary Structure Assignment"},
+                    {"label": "Payroll Period", "type": "Link", "link_type": "DocType", "link_to": "Payroll Period"},
+
+                    {"label": "Payroll Processing", "type": "Card Break"},
+                    {"label": "Payroll Entry", "type": "Link", "link_type": "DocType", "link_to": "Payroll Entry"},
+                    {"label": "Salary Slip", "type": "Link", "link_type": "DocType", "link_to": "Salary Slip"},
+                    {"label": "Additional Salary", "type": "Link", "link_type": "DocType", "link_to": "Additional Salary"},
+                    {"label": "Employee Incentive", "type": "Link", "link_type": "DocType", "link_to": "Employee Incentive"},
+
+                    {"label": "Reports", "type": "Card Break"},
+                    {"label": "Salary Register", "type": "Link", "link_type": "Report", "link_to": "Salary Register"},
+                    {"label": "Bank Remittance", "type": "Link", "link_type": "Report", "link_to": "Bank Remittance"}
+                ]
+                for l in pay_links:
+                    ws_pay.append("links", l)
+
+                ws_pay.content = json.dumps([
+                    {"id": "hdr_pay_sc", "type": "header", "data": {"text": "Payroll Actions", "level": 4, "col": 12}},
+                    {"id": "sc_pay_entry", "type": "shortcut", "data": {"shortcut_name": "Payroll Entry", "col": 4}},
+                    {"id": "sc_sal_struct", "type": "shortcut", "data": {"shortcut_name": "Salary Structure", "col": 4}},
+                    {"id": "sc_sal_comp", "type": "shortcut", "data": {"shortcut_name": "Salary Component", "col": 4}},
+                    {"id": "sc_sal_assign", "type": "shortcut", "data": {"shortcut_name": "Salary Structure Assignment", "col": 4}},
+                    {"id": "sc_sal_slip", "type": "shortcut", "data": {"shortcut_name": "Salary Slip", "col": 4}},
+                    {"id": "hdr_pay_cards", "type": "header", "data": {"text": "Configuration & Records", "level": 4, "col": 12}},
+                    {"id": "card_pay_setup", "type": "card", "data": {"card_name": "Payroll Setup", "col": 4}},
+                    {"id": "card_pay_process", "type": "card", "data": {"card_name": "Payroll Processing", "col": 4}},
+                    {"id": "card_pay_reports", "type": "card", "data": {"card_name": "Reports", "col": 4}}
+                ])
+                ws_pay.save(ignore_permissions=True)
+                print("Enriched Payroll workspace!")
+
+            # 6. Seed essential Master Data (Departments, Designations, Salary Components) if missing
+            standard_depts = ["Engineering", "Sales & Marketing", "Human Resources", "Finance & Accounts", "Operations"]
+            for d in standard_depts:
+                if not frappe.db.exists("Department", d):
+                    try:
+                        dept = frappe.new_doc("Department")
+                        dept.department_name = d
+                        dept.insert(ignore_permissions=True)
+                    except Exception:
+                        pass
+
+            standard_desigs = ["Software Engineer", "Sales Executive", "HR Manager", "Accountant", "Operations Manager"]
+            for des in standard_desigs:
+                if not frappe.db.exists("Designation", des):
+                    try:
+                        dsg = frappe.new_doc("Designation")
+                        dsg.designation_name = des
+                        dsg.insert(ignore_permissions=True)
+                    except Exception:
+                        pass
+
+            # Pre-populate Standard Salary Components
+            components = [
+                {"name": "Basic", "type": "Earning", "desc": "Basic Salary"},
+                {"name": "House Rent Allowance", "type": "Earning", "desc": "HRA"},
+                {"name": "Special Allowance", "type": "Earning", "desc": "Special Allowance"},
+                {"name": "Provident Fund", "type": "Deduction", "desc": "PF Employee Contribution"},
+                {"name": "Professional Tax", "type": "Deduction", "desc": "Professional Tax"}
+            ]
+            for comp in components:
+                if not frappe.db.exists("Salary Component", comp["name"]):
+                    try:
+                        sc = frappe.new_doc("Salary Component")
+                        sc.salary_component = comp["name"]
+                        sc.salary_component_abbr = "".join([w[0] for w in comp["name"].split()]).upper()
+                        sc.type = comp["type"]
+                        sc.description = comp["desc"]
+                        sc.insert(ignore_permissions=True)
+                        print("Created Salary Component:", comp["name"])
+                    except Exception as e:
+                        print("Component note:", e)
+
             frappe.db.commit()
             print("Branding, Onboarding dismissal, and Role Profiles committed successfully!")
             EOF
