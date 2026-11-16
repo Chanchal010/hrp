@@ -410,6 +410,172 @@ jobs:
                 staff_emp = e_staff.name
                 print("Created Staff Employee:", staff_emp)
 
+            # 8. Clean and Restructure Sidebar Workspaces (Pure HRMS Navigation)
+            hidden_workspaces = [
+                "Accounting", "Buying", "Selling", "Stock", "Assets", 
+                "Manufacturing", "Quality", "Projects", "Support", 
+                "Website", "CRM", "Tools", "ERPNext Settings", 
+                "ERPNext Integrations", "Integrations", "Build", 
+                "Tax & Benefits", "Performance"
+            ]
+            for ws_name in hidden_workspaces:
+                if frappe.db.exists("Workspace", ws_name):
+                    frappe.db.set_value("Workspace", ws_name, "is_hidden", 1)
+            print("Hidden non-HR ERP clutter from sidebar!")
+
+            # Rename & re-sequence HR workspaces
+            hr_workspace_map = {
+                "HR Setup": {"label": "Quick Start & Overview", "icon": "rocket", "seq": 1.0},
+                "Tenure": {"label": "Employees", "icon": "users", "seq": 2.0},
+                "Shift & Attendance": {"label": "Attendance & Shifts", "icon": "clock", "seq": 3.0},
+                "Leaves": {"label": "Leaves & Holidays", "icon": "calendar", "seq": 4.0},
+                "Payroll": {"label": "Payroll & Salaries", "icon": "wallet", "seq": 5.0},
+                "Recruitment": {"label": "Recruitment & Hiring", "icon": "user-check", "seq": 6.0},
+                "Expenses": {"label": "Expenses & Claims", "icon": "receipt", "seq": 7.0},
+                "Users": {"label": "User Access & Roles", "icon": "shield", "seq": 8.0}
+            }
+            for ws_name, conf in hr_workspace_map.items():
+                if frappe.db.exists("Workspace", ws_name):
+                    frappe.db.set_value("Workspace", ws_name, "label", conf["label"])
+                    frappe.db.set_value("Workspace", ws_name, "icon", conf["icon"])
+                    frappe.db.set_value("Workspace", ws_name, "sequence_id", conf["seq"])
+                    frappe.db.set_value("Workspace", ws_name, "is_hidden", 0)
+            print("Renamed and re-ordered HR workspaces!")
+
+            # 9. Build the Quick Start & Overview Workspace (Interactive 3-Step Guide)
+            if frappe.db.exists("Workspace", "HR Setup"):
+                ws_qs = frappe.get_doc("Workspace", "HR Setup")
+                ws_qs.label = "Quick Start & Overview"
+                ws_qs.shortcuts = []
+                ws_qs.links = []
+
+                qs_shortcuts = [
+                    {"label": "1. Company Setup", "type": "DocType", "link_to": "Company", "doc_view": "List", "color": "Purple"},
+                    {"label": "2. Add Employee", "type": "DocType", "link_to": "Employee", "doc_view": "List", "color": "Blue"},
+                    {"label": "3. Run Payroll", "type": "DocType", "link_to": "Payroll Entry", "doc_view": "List", "color": "Green"},
+                    {"label": "4. Manage Leaves", "type": "DocType", "link_to": "Leave Application", "doc_view": "List", "color": "Orange"},
+                    {"label": "5. Daily Attendance", "type": "DocType", "link_to": "Attendance", "doc_view": "List", "color": "Cyan"},
+                    {"label": "6. Org Chart", "type": "Page", "link_to": "organizational-chart", "color": "Pink"}
+                ]
+                for sc in qs_shortcuts:
+                    ws_qs.append("shortcuts", sc)
+
+                qs_links = [
+                    {"label": "Step 1: Company Profile", "type": "Card Break"},
+                    {"label": "Company", "type": "Link", "link_type": "DocType", "link_to": "Company"},
+                    {"label": "Department", "type": "Link", "link_type": "DocType", "link_to": "Department"},
+                    {"label": "Designation", "type": "Link", "link_type": "DocType", "link_to": "Designation"},
+                    {"label": "Branch", "type": "Link", "link_type": "DocType", "link_to": "Branch"},
+
+                    {"label": "Step 2: Employee Roster", "type": "Card Break"},
+                    {"label": "Employee Directory", "type": "Link", "link_type": "DocType", "link_to": "Employee"},
+                    {"label": "Upload Employees (Excel)", "type": "Link", "link_type": "DocType", "link_to": "Data Import"},
+                    {"label": "Visual Org Chart", "type": "Link", "link_type": "Page", "link_to": "organizational-chart"},
+                    {"label": "Employee Onboarding", "type": "Link", "link_type": "DocType", "link_to": "Employee Onboarding"},
+
+                    {"label": "Step 3: Payroll Automation", "type": "Card Break"},
+                    {"label": "Process Monthly Payroll", "type": "Link", "link_type": "DocType", "link_to": "Payroll Entry"},
+                    {"label": "Salary Slips", "type": "Link", "link_type": "DocType", "link_to": "Salary Slip"},
+                    {"label": "Salary Components (Basic/HRA)", "type": "Link", "link_type": "DocType", "link_to": "Salary Component"},
+                    {"label": "Salary Structures", "type": "Link", "link_type": "DocType", "link_to": "Salary Structure"},
+
+                    {"label": "Step 4: Everyday Operations", "type": "Card Break"},
+                    {"label": "Leave Applications", "type": "Link", "link_type": "DocType", "link_to": "Leave Application"},
+                    {"label": "Attendance Records", "type": "Link", "link_type": "DocType", "link_to": "Attendance"},
+                    {"label": "Shift Schedules", "type": "Link", "link_type": "DocType", "link_to": "Shift Type"},
+                    {"label": "Expense Claims", "type": "Link", "link_type": "DocType", "link_to": "Expense Claim"}
+                ]
+                for lk in qs_links:
+                    ws_qs.append("links", lk)
+
+                ws_qs.content = json.dumps([
+                    {"id": "hdr_qs_intro", "type": "header", "data": {"text": "🚀 Administrator Quick Launch Guide", "level": 3, "col": 12}},
+                    {"id": "sc_comp", "type": "shortcut", "data": {"shortcut_name": "1. Company Setup", "col": 4}},
+                    {"id": "sc_emp", "type": "shortcut", "data": {"shortcut_name": "2. Add Employee", "col": 4}},
+                    {"id": "sc_pay", "type": "shortcut", "data": {"shortcut_name": "3. Run Payroll", "col": 4}},
+                    {"id": "sc_leave", "type": "shortcut", "data": {"shortcut_name": "4. Manage Leaves", "col": 4}},
+                    {"id": "sc_att", "type": "shortcut", "data": {"shortcut_name": "5. Daily Attendance", "col": 4}},
+                    {"id": "sc_org", "type": "shortcut", "data": {"shortcut_name": "6. Org Chart", "col": 4}},
+                    {"id": "hdr_qs_cards", "type": "header", "data": {"text": "Launchpad Modules & Setup Cards", "level": 4, "col": 12}},
+                    {"id": "card_step1", "type": "card", "data": {"card_name": "Step 1: Company Profile", "col": 3}},
+                    {"id": "card_step2", "type": "card", "data": {"card_name": "Step 2: Employee Roster", "col": 3}},
+                    {"id": "card_step3", "type": "card", "data": {"card_name": "Step 3: Payroll Automation", "col": 3}},
+                    {"id": "card_step4", "type": "card", "data": {"card_name": "Step 4: Everyday Operations", "col": 3}}
+                ])
+                ws_qs.save(ignore_permissions=True)
+                print("Configured Quick Start & Overview dashboard!")
+
+            # 10. Enrich Tenure (renamed Employees) Workspace
+            if frappe.db.exists("Workspace", "Tenure"):
+                ws_tenure = frappe.get_doc("Workspace", "Tenure")
+                ws_tenure.label = "Employees"
+                ws_tenure.shortcuts = []
+                ws_tenure.links = []
+
+                ten_shortcuts = [
+                    {"label": "Employee Directory", "type": "DocType", "link_to": "Employee", "doc_view": "List", "color": "Blue"},
+                    {"label": "Org Chart", "type": "Page", "link_to": "organizational-chart", "color": "Purple"},
+                    {"label": "New Onboarding", "type": "DocType", "link_to": "Employee Onboarding", "doc_view": "List", "color": "Green"},
+                    {"label": "Promotions", "type": "DocType", "link_to": "Employee Promotion", "doc_view": "List", "color": "Orange"}
+                ]
+                for sc in ten_shortcuts:
+                    ws_tenure.append("shortcuts", sc)
+
+                ten_links = [
+                    {"label": "Employee Records", "type": "Card Break"},
+                    {"label": "All Employees", "type": "Link", "link_type": "DocType", "link_to": "Employee"},
+                    {"label": "Departments", "type": "Link", "link_type": "DocType", "link_to": "Department"},
+                    {"label": "Designations", "type": "Link", "link_type": "DocType", "link_to": "Designation"},
+                    {"label": "Branches", "type": "Link", "link_type": "DocType", "link_to": "Branch"},
+
+                    {"label": "Lifecycle Management", "type": "Card Break"},
+                    {"label": "Employee Onboarding", "type": "Link", "link_type": "DocType", "link_to": "Employee Onboarding"},
+                    {"label": "Employee Promotion", "type": "Link", "link_type": "DocType", "link_to": "Employee Promotion"},
+                    {"label": "Employee Transfer", "type": "Link", "link_type": "DocType", "link_to": "Employee Transfer"},
+                    {"label": "Employee Separation (Exit)", "type": "Link", "link_type": "DocType", "link_to": "Employee Separation"}
+                ]
+                for lk in ten_links:
+                    ws_tenure.append("links", lk)
+
+                ws_tenure.content = json.dumps([
+                    {"id": "hdr_ten_sc", "type": "header", "data": {"text": "Employee Shortcuts", "level": 4, "col": 12}},
+                    {"id": "sc_emp_dir", "type": "shortcut", "data": {"shortcut_name": "Employee Directory", "col": 3}},
+                    {"id": "sc_org_chart", "type": "shortcut", "data": {"shortcut_name": "Org Chart", "col": 3}},
+                    {"id": "sc_onboard", "type": "shortcut", "data": {"shortcut_name": "New Onboarding", "col": 3}},
+                    {"id": "sc_promo", "type": "shortcut", "data": {"shortcut_name": "Promotions", "col": 3}},
+                    {"id": "hdr_ten_cards", "type": "header", "data": {"text": "Management & Directory", "level": 4, "col": 12}},
+                    {"id": "card_records", "type": "card", "data": {"card_name": "Employee Records", "col": 6}},
+                    {"id": "card_lifecycle", "type": "card", "data": {"card_name": "Lifecycle Management", "col": 6}}
+                ])
+                ws_tenure.save(ignore_permissions=True)
+                print("Configured Employees workspace!")
+
+            # 11. Allocate Leaves to Rahul Verma (for instant demo)
+            if frappe.db.exists("Employee", staff_emp):
+                if not frappe.db.exists("Leave Type", "Casual Leave"):
+                    try:
+                        lt = frappe.new_doc("Leave Type")
+                        lt.leave_type_name = "Casual Leave"
+                        lt.max_days_allowed = 12
+                        lt.insert(ignore_permissions=True)
+                    except Exception:
+                        pass
+                
+                if frappe.db.exists("Leave Type", "Casual Leave"):
+                    if not frappe.db.exists("Leave Allocation", {"employee": staff_emp, "leave_type": "Casual Leave"}):
+                        try:
+                            la = frappe.new_doc("Leave Allocation")
+                            la.employee = staff_emp
+                            la.leave_type = "Casual Leave"
+                            la.from_date = "2026-01-01"
+                            la.to_date = "2026-12-31"
+                            la.new_leaves_allocated = 12
+                            la.docstatus = 1
+                            la.insert(ignore_permissions=True)
+                            print("Allocated 12 Casual Leaves to Rahul Verma!")
+                        except Exception as e:
+                            print("Leave allocation note:", e)
+
             frappe.db.commit()
             print("Branding, Onboarding dismissal, and Role Profiles committed successfully!")
             EOF
