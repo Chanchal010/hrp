@@ -56,14 +56,20 @@ jobs:
             yarn build
 
             cd /home/frappe/frappe-bench
+            echo "Ensuring HRMS app is installed on site..."
+            bench --site hrp.servicedialtm.com install-app hrms 2>/dev/null || true
+
             echo "Building Desk assets..."
             bench build --app hrms
 
             echo "Migrating site database..."
             bench --site hrp.servicedialtm.com migrate
 
-            echo "Applying ServiceDialTM branding to database..."
+            echo "Applying ServiceDialTM branding and database configuration..."
             bench --site hrp.servicedialtm.com console << 'EOF'
+            import frappe
+
+            # 1. Branding Settings
             frappe.db.set_single_value("System Settings", "app_name", "ServiceDialTM HRMS")
             frappe.db.set_single_value("System Settings", "language", "en")
             frappe.db.set_single_value("System Settings", "time_zone", "Asia/Kolkata")
@@ -76,8 +82,67 @@ jobs:
 
             frappe.db.set_single_value("Navbar Settings", "app_logo", "/assets/hrms/images/servicedial-logo.webp")
 
+            # 2. Dismiss and mark complete all workspace tutorial ongoarding to prevent JS errors and messy banners
+            frappe.db.sql("UPDATE `tabModule Onboarding` SET is_complete = 1")
+            frappe.db.sql("UPDATE `tabOnboarding Step` SET is_complete = 1")
+            print("Completed all workspace tutorial onboarding steps!")
+
+            # 3. Create pre-built Role Profiles for HR & Payroll
+            profiles = {
+                "HR Manager": [
+                    "HR Manager", "HR User", "Employee", "Desk User", 
+                    "Leave Approver", "Expense Approver", "Interview Approver"
+                ],
+                "Payroll Manager": [
+                    "Payroll Manager", "Payroll User", "Accounts User", 
+                    "Employee", "Desk User"
+                ],
+                "HR Executive": [
+                    "HR User", "Employee", "Desk User"
+                ],
+                "Employee Self Service": [
+                    "Employee", "Desk User"
+                ]
+            }
+
+            for prof_name, roles in profiles.items():
+                if not frappe.db.exists("Role Profile", prof_name):
+                    doc = frappe.new_doc("Role Profile")
+                    doc.role_profile = prof_name
+                    for r in roles:
+                        if frappe.db.exists("Role", r):
+                            doc.append("roles", {"role": r})
+                    doc.insert(ignore_permissions=True)
+                    print("Created Role Profile:", prof_name)
+
+            # 4. Ensure Administrator and specific user accounts have full HR & Payroll roles
+            admin_roles = [
+                "System Manager", "HR Manager", "HR User", "Payroll Manager", 
+                "Payroll User", "Leave Approver", "Expense Approver"
+            ]
+            for r in admin_roles:
+                if frappe.db.exists("Role", r):
+                    if not frappe.db.exists("Has Role", {"parent": "Administrator", "role": r}):
+                        frappe.get_doc({
+                            "doctype": "Has Role",
+                            "parent": "Administrator",
+                            "parenttype": "User",
+                            "parentfield": "roles",
+                            "role": r
+                        }).insert(ignore_permissions=True)
+
+            for user_id in ["chanchalbag115@gmail.com", "chanchalbag112@gmail.com"]:
+                if frappe.db.exists("User", user_id):
+                    user_doc = frappe.get_doc("User", user_id)
+                    current_roles = [d.role for d in user_doc.roles]
+                    for r in ["System Manager", "HR Manager", "HR User", "Payroll Manager", "Payroll User", "Desk User"]:
+                        if r not in current_roles and frappe.db.exists("Role", r):
+                            user_doc.append("roles", {"role": r})
+                    user_doc.save(ignore_permissions=True)
+                    print("Assigned full HR & Payroll roles to", user_id)
+
             frappe.db.commit()
-            print("Branding and splash image committed successfully!")
+            print("Branding, Onboarding dismissal, and Role Profiles committed successfully!")
             EOF
 
             sudo chmod -R 755 /home/frappe/frappe-bench/sites/assets/
