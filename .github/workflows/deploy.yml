@@ -293,122 +293,26 @@ jobs:
                     except Exception as e:
                         print("Component note:", e)
 
-            # 7. Create Standard Demo Team Hierarchy (for instant client presentation)
-            from frappe.utils.password import update_password
+            # 7. Remove all test/demo users and employees (except Administrator and Guest) so user can start 100% fresh
+            safe_users = ["Administrator", "Guest"]
+            all_users = frappe.get_all("User", fields=["name"])
+            for u in all_users:
+                if u.name not in safe_users:
+                    try:
+                        emp = frappe.db.get_value("Employee", {"user_id": u.name}, "name")
+                        if emp:
+                            frappe.delete_doc("Employee", emp, force=1, ignore_permissions=True)
+                        frappe.delete_doc("User", u.name, force=1, ignore_permissions=True)
+                        print("Deleted user:", u.name)
+                    except Exception as e:
+                        print("User cleanup note:", e)
 
-            default_company = frappe.db.get_single_value("Global Defaults", "default_company")
-            if not default_company:
-                comps = frappe.get_all("Company", limit=1)
-                default_company = comps[0].name if comps else None
-            
-            if not default_company:
-                new_c = frappe.new_doc("Company")
-                new_c.company_name = "ServiceDial Technologies"
-                new_c.default_currency = "INR"
-                new_c.insert(ignore_permissions=True)
-                default_company = new_c.name
-
-            def get_or_create_user(email, first_name, last_name, roles):
-                if not frappe.db.exists("User", email):
-                    u = frappe.new_doc("User")
-                    u.email = email
-                    u.first_name = first_name
-                    u.last_name = last_name
-                    u.send_welcome_email = 0
-                    u.user_type = "System User"
-                    for r in roles:
-                        if frappe.db.exists("Role", r):
-                            u.append("roles", {"role": r})
-                    u.insert(ignore_permissions=True)
-                    update_password(email, "ServiceDial@123")
-                    print("Created user:", email)
-                    return u.name
-                else:
-                    u = frappe.get_doc("User", email)
-                    for r in roles:
-                        if frappe.db.exists("Role", r) and r not in [d.role for d in u.roles]:
-                            u.append("roles", {"role": r})
-                    u.save(ignore_permissions=True)
-                    update_password(email, "ServiceDial@123")
-                    return u.name
-
-            # 1. Top of Hierarchy: Managing Director / Admin
-            md_email = "chanchalbag115@gmail.com" if frappe.db.exists("User", "chanchalbag115@gmail.com") else "admin@servicedialtm.com"
-            get_or_create_user(md_email, "Purna", "Bag", ["System Manager", "HR Manager", "Payroll Manager"])
-            
-            top_emp = frappe.db.get_value("Employee", {"user_id": md_email}, "name")
-            if not top_emp:
-                emp_md = frappe.new_doc("Employee")
-                emp_md.first_name = "Purna"
-                emp_md.last_name = "Bag"
-                emp_md.company = default_company
-                emp_md.user_id = md_email
-                emp_md.designation = "Managing Director"
-                emp_md.department = "Operations"
-                emp_md.date_of_joining = "2024-01-01"
-                emp_md.gender = "Male"
-                emp_md.status = "Active"
-                emp_md.insert(ignore_permissions=True)
-                top_emp = emp_md.name
-                print("Created MD Employee:", top_emp)
-
-            # 2. HR Manager (Reports to MD)
-            hr_user = get_or_create_user("hr@servicedialtm.com", "Priya", "Sharma", ["HR Manager", "Payroll Manager", "HR User", "Payroll User", "Employee", "Desk User"])
-            hr_emp = frappe.db.get_value("Employee", {"user_id": "hr@servicedialtm.com"}, "name")
-            if not hr_emp:
-                e_hr = frappe.new_doc("Employee")
-                e_hr.first_name = "Priya"
-                e_hr.last_name = "Sharma"
-                e_hr.company = default_company
-                e_hr.user_id = "hr@servicedialtm.com"
-                e_hr.reports_to = top_emp
-                e_hr.designation = "HR Manager"
-                e_hr.department = "Human Resources"
-                e_hr.date_of_joining = "2024-02-01"
-                e_hr.gender = "Female"
-                e_hr.status = "Active"
-                e_hr.insert(ignore_permissions=True)
-                hr_emp = e_hr.name
-                print("Created HR Manager Employee:", hr_emp)
-
-            # 3. Engineering Manager / Team Lead (Reports to MD)
-            mgr_user = get_or_create_user("manager@servicedialtm.com", "Amit", "Patel", ["Employee", "Desk User", "Leave Approver", "Expense Approver"])
-            mgr_emp = frappe.db.get_value("Employee", {"user_id": "manager@servicedialtm.com"}, "name")
-            if not mgr_emp:
-                e_mgr = frappe.new_doc("Employee")
-                e_mgr.first_name = "Amit"
-                e_mgr.last_name = "Patel"
-                e_mgr.company = default_company
-                e_mgr.user_id = "manager@servicedialtm.com"
-                e_mgr.reports_to = top_emp
-                e_mgr.designation = "Operations Manager"
-                e_mgr.department = "Engineering"
-                e_mgr.date_of_joining = "2024-02-15"
-                e_mgr.gender = "Male"
-                e_mgr.status = "Active"
-                e_mgr.insert(ignore_permissions=True)
-                mgr_emp = e_mgr.name
-                print("Created Team Manager Employee:", mgr_emp)
-
-            # 4. Staff Employee (Reports to Engineering Manager Amit Patel)
-            staff_user = get_or_create_user("rahul@servicedialtm.com", "Rahul", "Verma", ["Employee", "Desk User"])
-            staff_emp = frappe.db.get_value("Employee", {"user_id": "rahul@servicedialtm.com"}, "name")
-            if not staff_emp:
-                e_staff = frappe.new_doc("Employee")
-                e_staff.first_name = "Rahul"
-                e_staff.last_name = "Verma"
-                e_staff.company = default_company
-                e_staff.user_id = "rahul@servicedialtm.com"
-                e_staff.reports_to = mgr_emp
-                e_staff.leave_approver = "manager@servicedialtm.com"
-                e_staff.designation = "Software Engineer"
-                e_staff.department = "Engineering"
-                e_staff.date_of_joining = "2024-03-01"
-                e_staff.gender = "Male"
-                e_staff.status = "Active"
-                e_staff.insert(ignore_permissions=True)
-                staff_emp = e_staff.name
-                print("Created Staff Employee:", staff_emp)
+            for emp_name in frappe.get_all("Employee", pluck="name"):
+                try:
+                    frappe.delete_doc("Employee", emp_name, force=1, ignore_permissions=True)
+                except Exception:
+                    pass
+            print("All test users and employees wiped clean for fresh start!")
 
             # 8. Clean and Restructure Sidebar Workspaces (Pure HRMS Navigation)
             hidden_workspaces = [
