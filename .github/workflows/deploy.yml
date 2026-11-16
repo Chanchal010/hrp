@@ -454,31 +454,9 @@ jobs:
                 ws_tenure.save(ignore_permissions=True)
                 print("Configured Employees workspace!")
 
-            # 11. Allocate Leaves to Rahul Verma (for instant demo)
-            if frappe.db.exists("Employee", staff_emp):
-                if not frappe.db.exists("Leave Type", "Casual Leave"):
-                    try:
-                        lt = frappe.new_doc("Leave Type")
-                        lt.leave_type_name = "Casual Leave"
-                        lt.max_days_allowed = 12
-                        lt.insert(ignore_permissions=True)
-                    except Exception:
-                        pass
-                
-                if frappe.db.exists("Leave Type", "Casual Leave"):
-                    if not frappe.db.exists("Leave Allocation", {"employee": staff_emp, "leave_type": "Casual Leave"}):
-                        try:
-                            la = frappe.new_doc("Leave Allocation")
-                            la.employee = staff_emp
-                            la.leave_type = "Casual Leave"
-                            la.from_date = "2026-01-01"
-                            la.to_date = "2026-12-31"
-                            la.new_leaves_allocated = 12
-                            la.docstatus = 1
-                            la.insert(ignore_permissions=True)
-                            print("Allocated 12 Casual Leaves to Rahul Verma!")
-                        except Exception as e:
-                            print("Leave allocation note:", e)
+            # Clear all stale sessions so deleted test users don't cause 500 errors in browsers
+            frappe.db.sql("DELETE FROM `tabSessions`")
+            print("Cleared all stale user sessions!")
 
             frappe.db.commit()
             print("Branding, Onboarding dismissal, and Role Profiles committed successfully!")
