@@ -57,9 +57,14 @@ jobs:
 
             cd /home/frappe/frappe-bench
             echo "Ensuring HRMS app is installed on site..."
-            bench --site hrp.servicedialtm.com execute frappe.db.delete --args "['Module Def', 'HR Setup']" 2>/dev/null || true
-            bench --site hrp.servicedialtm.com execute frappe.db.commit 2>/dev/null || true
-            bench --site hrp.servicedialtm.com install-app hrms --force || true
+            bench --site hrp.servicedialtm.com console << 'EOF'
+            import frappe
+            for m in ['HR Setup', 'Tenure', 'Recruitment', 'Shift and Attendance', 'Leaves', 'Expenses', 'Performance', 'Payroll', 'Tax and Benefits', 'HR']:
+                if frappe.db.exists('Module Def', m):
+                    frappe.db.delete('Module Def', m)
+            frappe.db.commit()
+            EOF
+            bench --site hrp.servicedialtm.com install-app hrms --force
 
             echo "Building Desk assets..."
             bench build --app hrms
@@ -143,68 +148,14 @@ jobs:
                     user_doc.save(ignore_permissions=True)
                     print("Assigned full HR & Payroll roles to", user_id)
 
-            # 5. Enrich HR Setup and Payroll Workspaces with rich shortcuts and link cards
+            # 5. Enrich Payroll Workspace with rich shortcuts and link cards
             import json
-
-            # Update HR Setup Workspace
-            if frappe.db.exists("Workspace", "HR Setup"):
-                ws_hr = frappe.get_doc("Workspace", "HR Setup")
-                ws_hr.shortcuts = []
-                ws_hr.links = []
-                
-                hr_shortcuts = [
-                    {"label": "Employee", "type": "DocType", "link_to": "Employee", "doc_view": "List", "color": "Blue"},
-                    {"label": "Leave Application", "type": "DocType", "link_to": "Leave Application", "doc_view": "List", "color": "Green"},
-                    {"label": "Attendance", "type": "DocType", "link_to": "Attendance", "doc_view": "List", "color": "Orange"},
-                    {"label": "Department", "type": "DocType", "link_to": "Department", "doc_view": "List", "color": "Grey"},
-                    {"label": "Designation", "type": "DocType", "link_to": "Designation", "doc_view": "List", "color": "Grey"},
-                    {"label": "Job Opening", "type": "DocType", "link_to": "Job Opening", "doc_view": "List", "color": "Cyan"}
-                ]
-                for s in hr_shortcuts:
-                    ws_hr.append("shortcuts", s)
-                    
-                hr_links = [
-                    {"label": "Core Masters", "type": "Card Break"},
-                    {"label": "Employee", "type": "Link", "link_type": "DocType", "link_to": "Employee"},
-                    {"label": "Department", "type": "Link", "link_type": "DocType", "link_to": "Department"},
-                    {"label": "Designation", "type": "Link", "link_type": "DocType", "link_to": "Designation"},
-                    {"label": "Branch", "type": "Link", "link_type": "DocType", "link_to": "Branch"},
-                    {"label": "Company", "type": "Link", "link_type": "DocType", "link_to": "Company"},
-
-                    {"label": "Employee Lifecycle", "type": "Card Break"},
-                    {"label": "Employee Onboarding", "type": "Link", "link_type": "DocType", "link_to": "Employee Onboarding"},
-                    {"label": "Employee Promotion", "type": "Link", "link_type": "DocType", "link_to": "Employee Promotion"},
-                    {"label": "Employee Transfer", "type": "Link", "link_type": "DocType", "link_to": "Employee Transfer"},
-                    {"label": "Employee Separation", "type": "Link", "link_type": "DocType", "link_to": "Employee Separation"},
-
-                    {"label": "Recruitment", "type": "Card Break"},
-                    {"label": "Job Opening", "type": "Link", "link_type": "DocType", "link_to": "Job Opening"},
-                    {"label": "Job Applicant", "type": "Link", "link_type": "DocType", "link_to": "Job Applicant"},
-                    {"label": "Job Offer", "type": "Link", "link_type": "DocType", "link_to": "Job Offer"},
-                    {"label": "Interview", "type": "Link", "link_type": "DocType", "link_type_target": "Interview", "link_to": "Interview"}
-                ]
-                for l in hr_links:
-                    ws_hr.append("links", l)
-
-                ws_hr.content = json.dumps([
-                    {"id": "hdr_shortcuts", "type": "header", "data": {"text": "Quick Shortcuts", "level": 4, "col": 12}},
-                    {"id": "sc_emp", "type": "shortcut", "data": {"shortcut_name": "Employee", "col": 4}},
-                    {"id": "sc_leave", "type": "shortcut", "data": {"shortcut_name": "Leave Application", "col": 4}},
-                    {"id": "sc_att", "type": "shortcut", "data": {"shortcut_name": "Attendance", "col": 4}},
-                    {"id": "sc_dept", "type": "shortcut", "data": {"shortcut_name": "Department", "col": 4}},
-                    {"id": "sc_desig", "type": "shortcut", "data": {"shortcut_name": "Designation", "col": 4}},
-                    {"id": "sc_job", "type": "shortcut", "data": {"shortcut_name": "Job Opening", "col": 4}},
-                    {"id": "hdr_cards", "type": "header", "data": {"text": "Masters & Operations", "level": 4, "col": 12}},
-                    {"id": "card_masters", "type": "card", "data": {"card_name": "Core Masters", "col": 4}},
-                    {"id": "card_lifecycle", "type": "card", "data": {"card_name": "Employee Lifecycle", "col": 4}},
-                    {"id": "card_recruitment", "type": "card", "data": {"card_name": "Recruitment", "col": 4}}
-                ])
-                ws_hr.save(ignore_permissions=True)
-                print("Enriched HR Setup workspace!")
 
             # Update Payroll Workspace
             if frappe.db.exists("Workspace", "Payroll"):
                 ws_pay = frappe.get_doc("Workspace", "Payroll")
+                ws_pay.title = "Payroll & Salaries"
+                ws_pay.label = "Payroll & Salaries"
                 ws_pay.shortcuts = []
                 ws_pay.links = []
                 
@@ -342,15 +293,22 @@ jobs:
             }
             for ws_name, conf in hr_workspace_map.items():
                 if frappe.db.exists("Workspace", ws_name):
+                    frappe.db.set_value("Workspace", ws_name, "title", conf["label"])
                     frappe.db.set_value("Workspace", ws_name, "label", conf["label"])
                     frappe.db.set_value("Workspace", ws_name, "icon", conf["icon"])
                     frappe.db.set_value("Workspace", ws_name, "sequence_id", conf["seq"])
                     frappe.db.set_value("Workspace", ws_name, "is_hidden", 0)
             print("Renamed and re-ordered HR workspaces!")
 
+            # Delete any user-specific customized workspace copies so everyone sees standard public workspaces
+            frappe.db.sql("DELETE FROM `tabWorkspace` WHERE for_user IS NOT NULL AND for_user != ''")
+            frappe.db.sql("DELETE FROM `tabWorkspace` WHERE is_custom = 1")
+            print("Reset all custom user workspaces!")
+
             # 9. Build the Quick Start & Overview Workspace (Interactive 3-Step Guide)
             if frappe.db.exists("Workspace", "HR Setup"):
                 ws_qs = frappe.get_doc("Workspace", "HR Setup")
+                ws_qs.title = "Quick Start & Overview"
                 ws_qs.label = "Quick Start & Overview"
                 ws_qs.shortcuts = []
                 ws_qs.links = []

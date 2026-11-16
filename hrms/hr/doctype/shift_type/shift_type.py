@@ -21,7 +21,14 @@ from frappe.utils import (
 )
 
 from erpnext.setup.doctype.employee.employee import get_holiday_list_for_employee
-from erpnext.setup.doctype.holiday_list.holiday_list import is_half_holiday, is_holiday
+try:
+	from erpnext.setup.doctype.holiday_list.holiday_list import is_half_holiday, is_holiday
+except ImportError:
+	from erpnext.setup.doctype.holiday_list.holiday_list import is_holiday
+
+	def is_half_holiday(holiday_list, attendance_date):
+		return False
+
 
 from hrms.hr.doctype.attendance.attendance import mark_attendance
 from hrms.hr.doctype.employee_checkin.employee_checkin import (
