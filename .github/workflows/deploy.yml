@@ -57,7 +57,9 @@ jobs:
 
             cd /home/frappe/frappe-bench
             echo "Ensuring HRMS app is installed on site..."
-            bench --site hrp.servicedialtm.com install-app hrms 2>/dev/null || true
+            bench --site hrp.servicedialtm.com execute frappe.db.delete --args "['Module Def', 'HR Setup']" 2>/dev/null || true
+            bench --site hrp.servicedialtm.com execute frappe.db.commit 2>/dev/null || true
+            bench --site hrp.servicedialtm.com install-app hrms --force || true
 
             echo "Building Desk assets..."
             bench build --app hrms
