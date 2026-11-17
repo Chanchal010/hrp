@@ -1,7 +1,7 @@
 {
  "app": "hrms",
  "charts": [],
- "content": "[{\"id\":\"hdr_launchpad\",\"type\":\"header\",\"data\":{\"text\":\"🚀 Administrator Quick Launchpad\",\"level\":3,\"col\":12}},{\"id\":\"sc_comp\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Company\",\"col\":3}},{\"id\":\"sc_emp\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee\",\"col\":3}},{\"id\":\"sc_pay\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Entry\",\"col\":3}},{\"id\":\"sc_leave\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leave Application\",\"col\":3}},{\"id\":\"hdr_modules\",\"type\":\"header\",\"data\":{\"text\":\"Step-by-Step Management Cards\",\"level\":4,\"col\":12}},{\"id\":\"card_step1\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 1: Company & Setup\",\"col\":4}},{\"id\":\"card_step2\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 2: Employee Operations\",\"col\":4}},{\"id\":\"card_step3\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 3: Payroll Automation\",\"col\":4}}]",
+ "content": "[{\"id\":\"hdr_launchpad\",\"type\":\"header\",\"data\":{\"text\":\"🚀 Administrator Quick Launch Guide\",\"level\":3,\"col\":12}},{\"id\":\"sc_comp\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Company\",\"col\":2}},{\"id\":\"sc_emp\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Employee\",\"col\":2}},{\"id\":\"sc_pay\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payroll Entry\",\"col\":2}},{\"id\":\"sc_leave\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Leave Application\",\"col\":3}},{\"id\":\"sc_att\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Attendance\",\"col\":3}},{\"id\":\"hdr_modules\",\"type\":\"header\",\"data\":{\"text\":\"Launchpad Modules & Setup Cards\",\"level\":4,\"col\":12}},{\"id\":\"card_step1\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 1: Company Profile\",\"col\":3}},{\"id\":\"card_step2\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 2: Employee Operations\",\"col\":3}},{\"id\":\"card_step3\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 3: Payroll Automation\",\"col\":3}},{\"id\":\"card_step4\",\"type\":\"card\",\"data\":{\"card_name\":\"Step 4: Everyday Operations\",\"col\":3}}]",
  "creation": "2020-03-02 15:48:58.322521",
  "custom_blocks": [],
  "docstatus": 0,
@@ -11,14 +11,14 @@
  "icon": "rocket",
  "idx": 1,
  "is_hidden": 0,
- "label": "Quick Start & Overview",
+ "label": "HR Setup",
  "links": [
   {
    "dependencies": "",
    "description": "",
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Step 1: Company & Setup",
+   "label": "Step 1: Company Profile",
    "link_count": 0,
    "link_to": "",
    "link_type": "DocType",
@@ -99,7 +99,7 @@
   },
   {
    "dependencies": "",
-   "description": "Bulk import 200+ employees from Excel",
+   "description": "Bulk import employees from Excel",
    "hidden": 0,
    "is_query_report": 0,
    "label": "Upload Employees (Excel)",
@@ -192,9 +192,69 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Step 4: Everyday Operations",
+   "link_count": 0,
+   "link_to": "",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "description": "Submit and approve staff leave requests",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Leave Applications",
+   "link_count": 0,
+   "link_to": "Leave Application",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Daily employee attendance logs",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Attendance Records",
+   "link_count": 0,
+   "link_to": "Attendance",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Morning, night, and flexible work shifts",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Shift Schedules",
+   "link_count": 0,
+   "link_to": "Shift Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Reimburse travel and official employee expenses",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Expense Claims",
+   "link_count": 0,
+   "link_to": "Expense Claim",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-11-16 12:00:00.000000",
+ "modified": "2026-11-17 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "HR Setup",
  "name": "HR Setup",
@@ -234,9 +294,16 @@
    "label": "Leave Application",
    "link_to": "Leave Application",
    "type": "DocType"
+  },
+  {
+   "color": "Cyan",
+   "doc_view": "List",
+   "label": "Attendance",
+   "link_to": "Attendance",
+   "type": "DocType"
   }
  ],
  "standard": 1,
- "title": "Quick Start & Overview",
+ "title": "HR Setup",
  "type": "Workspace"
 }
