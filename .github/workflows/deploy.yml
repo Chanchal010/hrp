@@ -154,8 +154,8 @@ jobs:
             # Update Payroll Workspace
             if frappe.db.exists("Workspace", "Payroll"):
                 ws_pay = frappe.get_doc("Workspace", "Payroll")
-                ws_pay.title = "Payroll & Salaries"
-                ws_pay.label = "Payroll & Salaries"
+                ws_pay.title = "Payroll"
+                ws_pay.label = "Payroll"
                 ws_pay.shortcuts = []
                 ws_pay.links = []
                 
@@ -282,14 +282,14 @@ jobs:
 
             # Rename & re-sequence HR workspaces
             hr_workspace_map = {
-                "HR Setup": {"label": "Quick Start & Overview", "icon": "rocket", "seq": 1.0},
-                "Tenure": {"label": "Employees", "icon": "users", "seq": 2.0},
-                "Shift & Attendance": {"label": "Attendance & Shifts", "icon": "clock", "seq": 3.0},
-                "Leaves": {"label": "Leaves & Holidays", "icon": "calendar", "seq": 4.0},
-                "Payroll": {"label": "Payroll & Salaries", "icon": "wallet", "seq": 5.0},
-                "Recruitment": {"label": "Recruitment & Hiring", "icon": "user-check", "seq": 6.0},
-                "Expenses": {"label": "Expenses & Claims", "icon": "receipt", "seq": 7.0},
-                "Users": {"label": "User Access & Roles", "icon": "shield", "seq": 8.0}
+                "HR Setup": {"label": "HR Setup", "icon": "rocket", "seq": 1.0},
+                "Tenure": {"label": "Tenure", "icon": "users", "seq": 2.0},
+                "Shift & Attendance": {"label": "Shift & Attendance", "icon": "clock", "seq": 3.0},
+                "Leaves": {"label": "Leaves", "icon": "calendar", "seq": 4.0},
+                "Payroll": {"label": "Payroll", "icon": "wallet", "seq": 5.0},
+                "Recruitment": {"label": "Recruitment", "icon": "user-check", "seq": 6.0},
+                "Expenses": {"label": "Expenses", "icon": "receipt", "seq": 7.0},
+                "Users": {"label": "Users", "icon": "shield", "seq": 8.0}
             }
             for ws_name, conf in hr_workspace_map.items():
                 if frappe.db.exists("Workspace", ws_name):
@@ -308,8 +308,8 @@ jobs:
             # 9. Build the Quick Start & Overview Workspace (Interactive 3-Step Guide)
             if frappe.db.exists("Workspace", "HR Setup"):
                 ws_qs = frappe.get_doc("Workspace", "HR Setup")
-                ws_qs.title = "Quick Start & Overview"
-                ws_qs.label = "Quick Start & Overview"
+                ws_qs.title = "HR Setup"
+                ws_qs.label = "HR Setup"
                 ws_qs.shortcuts = []
                 ws_qs.links = []
 
