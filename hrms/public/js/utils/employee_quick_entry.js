@@ -43,14 +43,6 @@ frappe.ui.form.EmployeeQuickEntryForm = class EmployeeQuickEntryForm extends (
 	frappe.ui.form.QuickEntryForm
 ) {
 	async setup() {
-		if (frappe.ui.OptionalSections) {
-			return super.setup();
-		}
-		try {
-			await frappe.require(["optional_sections.bundle.js", "optional_sections.bundle.css"]);
-		} catch (e) {
-			// OptionalSections bundle not available in this Frappe version
-		}
 		return super.setup();
 	}
 

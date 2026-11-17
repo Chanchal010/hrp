@@ -248,6 +248,14 @@ frappe.ui.form.on("Employee", {
 			frm.toggle_display("naming_series", value === "Naming Series");
 		});
 
+		let contact_email = frm.doc.company_email || frm.doc.personal_email;
+		let user_desc = frm.doc.user_id
+			? __("Linked Portal User: <b>{0}</b>", [frm.doc.user_id])
+			: contact_email
+			? __("Ready to create portal login for <b>{0}</b>. Click <b>Create User</b> below.", [contact_email])
+			: __("Click <b>Create User</b> below to enter an email and generate their login portal access.");
+		frm.set_df_property("user_id", "description", user_desc);
+
 		frm.trigger("add_assignment_actions");
 	},
 
@@ -277,5 +285,72 @@ frappe.ui.form.on("Employee", {
 		}).then((r) => {
 			if (r && r.message) frm.set_value("date_of_retirement", r.message);
 		});
+	},
+
+	create_user: function (frm) {
+		let email = frm.doc.prefered_email || frm.doc.company_email || frm.doc.personal_email;
+
+		const proceed_with_user_creation = (target_email) => {
+			const do_call = () => {
+				frappe.call({
+					method: "erpnext.setup.doctype.employee.employee.create_user",
+					args: { employee: frm.doc.name },
+					freeze: true,
+					freeze_message: __("Creating user login account..."),
+					callback: function (r) {
+						frappe.show_alert({
+							message: __("Portal login created successfully for {0}", [target_email]),
+							indicator: "green",
+						});
+						frm.reload_doc();
+					},
+				});
+			};
+
+			if (frm.is_new() || frm.is_dirty()) {
+				frm.save().then(() => {
+					do_call();
+				});
+			} else {
+				do_call();
+			}
+		};
+
+		if (email) {
+			proceed_with_user_creation(email);
+		} else {
+			frappe.prompt(
+				[
+					{
+						fieldname: "email",
+						label: __("Employee Login Email"),
+						fieldtype: "Data",
+						options: "Email",
+						reqd: 1,
+						description: __(
+							"Enter the work or personal email to create this employee's portal login."
+						),
+					},
+					{
+						fieldname: "email_type",
+						label: __("Email Type"),
+						fieldtype: "Select",
+						options: ["Company Email", "Personal Email"],
+						default: "Company Email",
+					},
+				],
+				(data) => {
+					let field_to_set =
+						data.email_type === "Company Email"
+							? "company_email"
+							: "personal_email";
+					frm.set_value(field_to_set, data.email);
+					frm.set_value("prefered_contact_email", data.email_type);
+					proceed_with_user_creation(data.email);
+				},
+				__("Create Portal Login Account"),
+				__("Create User")
+			);
+		}
 	},
 });
