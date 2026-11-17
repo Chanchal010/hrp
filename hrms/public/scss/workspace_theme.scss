@@ -1,0 +1,95 @@
+// ServiceDialTM HRMS - Premium Workspace Styling
+
+// Modern styling for Links / Setup Cards
+.widget.links-widget-box {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  padding: 18px 20px !important;
+  margin-bottom: 20px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-2px);
+  }
+
+  .widget-head {
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 12px !important;
+
+    .widget-title {
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      color: #0f172a !important;
+      letter-spacing: -0.01em !important;
+    }
+  }
+
+  .link-item {
+    padding: 7px 10px !important;
+    border-radius: 8px !important;
+    font-size: 13.5px !important;
+    color: #334155 !important;
+    transition: all 0.15s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    &:hover {
+      background: #f8fafc !important;
+      color: #1a56db !important;
+      text-decoration: none !important;
+
+      .link-text {
+        font-weight: 500 !important;
+      }
+    }
+  }
+}
+
+// Modern styling for Shortcuts (Quick Action Pills)
+.widget.shortcut-widget-box {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 12px 16px !important;
+  margin-bottom: 14px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    border-color: #3b82f6 !important;
+    background: #f0f7ff !important;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.1) !important;
+    transform: translateY(-1px);
+  }
+
+  .widget-title {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+  }
+
+  .indicator-pill {
+    font-weight: 600 !important;
+  }
+}
+
+// Section Headers
+.workspace-title, .ce-header {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+// Fix stuck tooltips/popovers in Desk
+.popover {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #e2e8f0 !important;
+  pointer-events: none !important;
+}
