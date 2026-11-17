@@ -43,7 +43,14 @@ frappe.ui.form.EmployeeQuickEntryForm = class EmployeeQuickEntryForm extends (
 	frappe.ui.form.QuickEntryForm
 ) {
 	async setup() {
-		await frappe.require(["optional_sections.bundle.js", "optional_sections.bundle.css"]);
+		if (frappe.ui.OptionalSections) {
+			return super.setup();
+		}
+		try {
+			await frappe.require(["optional_sections.bundle.js", "optional_sections.bundle.css"]);
+		} catch (e) {
+			// OptionalSections bundle not available in this Frappe version
+		}
 		return super.setup();
 	}
 
@@ -109,15 +116,17 @@ frappe.ui.form.EmployeeQuickEntryForm = class EmployeeQuickEntryForm extends (
 		if (!this.get_value("date_of_joining")) {
 			this.set_value("date_of_joining", frappe.datetime.get_today());
 		}
-		this.optional_sections = new frappe.ui.OptionalSections({
-			label: __("Add more now"),
-			sections: this.detail_sections.map((section, i) => ({
-				title: section.title,
-				content: () => this.make_detail_section(section, i),
-			})),
-			on_remove: (i) => this.clear_detail_section(i),
-		});
-		this.fields_dict.more_details.$wrapper.empty().append(this.optional_sections.$el);
+		if (frappe.ui.OptionalSections) {
+			this.optional_sections = new frappe.ui.OptionalSections({
+				label: __("Add more now"),
+				sections: this.detail_sections.map((section, i) => ({
+					title: section.title,
+					content: () => this.make_detail_section(section, i),
+				})),
+				on_remove: (i) => this.clear_detail_section(i),
+			});
+			this.fields_dict.more_details.$wrapper.empty().append(this.optional_sections.$el);
+		}
 	}
 
 	make_detail_section(section, i) {
@@ -149,7 +158,7 @@ frappe.ui.form.EmployeeQuickEntryForm = class EmployeeQuickEntryForm extends (
 		const values = super.get_values(ignore_errors, check_invalid);
 		if (!values) return values;
 		for (const [i, fields] of this.detail_fields.entries()) {
-			if (!fields || !this.optional_sections.is_added(i)) continue;
+			if (!fields || (this.optional_sections && !this.optional_sections.is_added(i))) continue;
 			const section_values = fields.get_values(ignore_errors, check_invalid);
 			if (!section_values) return null;
 			Object.assign(values, section_values);
