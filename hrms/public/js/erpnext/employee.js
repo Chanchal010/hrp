@@ -328,73 +328,86 @@ function create_portal_user(frm) {
 		return;
 	}
 
-	let email = frm.doc.prefered_email || frm.doc.company_email || frm.doc.personal_email;
+	let default_email = frm.doc.company_email || frm.doc.personal_email || "";
 
-	const proceed_with_user_creation = (target_email) => {
-		const do_call = () => {
-			frappe.call({
-				method: "erpnext.setup.doctype.employee.employee.create_user",
-				args: { employee: frm.doc.name },
-				freeze: true,
-				freeze_message: __("Creating user login account..."),
-				callback: function (r) {
-					frappe.show_alert({
-						message: __("Portal login created successfully for {0}", [target_email]),
-						indicator: "green",
-					});
-					frm.reload_doc();
-				},
-			});
-		};
-
-		if (frm.is_new() || frm.is_dirty()) {
-			frm.save().then(() => {
-				do_call();
-			}).catch(() => {
-				// Form validation stopped the save (e.g. missing mandatory fields)
-			});
-		} else {
-			do_call();
-		}
-	};
-
-	if (email) {
-		proceed_with_user_creation(email);
-	} else {
-		frappe.prompt(
-			[
-				{
-					fieldname: "email",
-					label: __("Employee Login Email"),
-					fieldtype: "Data",
-					options: "Email",
-					reqd: 1,
-					description: __(
-						"Enter the email address this employee will use to log into the portal."
-					),
-				},
-				{
-					fieldname: "email_type",
-					label: __("Email Type"),
-					fieldtype: "Select",
-					options: ["Company Email", "Personal Email"],
-					default: "Company Email",
-				},
-			],
-			(data) => {
-				let field_to_set =
-					data.email_type === "Company Email"
-						? "company_email"
-						: "personal_email";
-				frm.set_value(field_to_set, data.email);
-				frm.set_value("prefered_contact_email", data.email_type);
-				frm.set_value("prefered_email", data.email);
-				proceed_with_user_creation(data.email);
+	frappe.prompt(
+		[
+			{
+				fieldname: "email",
+				label: __("Employee Login Email"),
+				fieldtype: "Data",
+				options: "Email",
+				reqd: 1,
+				default: default_email,
+				description: __(
+					"The login email for employee portal access."
+				),
 			},
-			__("Create Portal Login Account"),
-			__("Create User")
-		);
-	}
+			{
+				fieldname: "password",
+				label: __("Initial Login Password"),
+				fieldtype: "Data",
+				reqd: 1,
+				default: "Service@123",
+				description: __(
+					"Employee can immediately log in from any computer using this password."
+				),
+			},
+			{
+				fieldname: "email_type",
+				label: __("Email Type"),
+				fieldtype: "Select",
+				options: ["Company Email", "Personal Email"],
+				default: "Company Email",
+			},
+		],
+		(data) => {
+			let field_to_set =
+				data.email_type === "Company Email"
+					? "company_email"
+					: "personal_email";
+			frm.set_value(field_to_set, data.email);
+			frm.set_value("prefered_contact_email", data.email_type);
+			frm.set_value("prefered_email", data.email);
+
+			const do_call = () => {
+				frappe.call({
+					method: "hrms.overrides.employee_master.create_employee_portal_user",
+					args: {
+						employee: frm.doc.name,
+						email: data.email,
+						email_type: data.email_type,
+						password: data.password,
+					},
+					freeze: true,
+					freeze_message: __("Creating employee login account..."),
+					callback: function (r) {
+						frappe.msgprint({
+							title: __("Portal Login Ready"),
+							message: __(
+								"User account created successfully!<br><br><b>Login URL:</b> <a href='/login' target='_blank'>hrp.servicedialtm.com/login</a><br><b>Username:</b> {0}<br><b>Password:</b> {1}<br><br>The employee can now log in immediately from any computer.",
+								[data.email, data.password]
+							),
+							indicator: "green",
+						});
+						frm.reload_doc();
+					},
+				});
+			};
+
+			if (frm.is_new() || frm.is_dirty()) {
+				frm.save().then(() => {
+					do_call();
+				}).catch(() => {
+					// Form validation stopped the save
+				});
+			} else {
+				do_call();
+			}
+		},
+		__("Create Employee Portal Login"),
+		__("Create User & Set Password")
+	);
 }
 
 // Global hook overwrite to ensure ERPNext handler never takes precedence

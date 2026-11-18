@@ -11,7 +11,7 @@
  "icon": "users",
  "idx": 3,
  "is_hidden": 0,
- "label": "Employees",
+ "label": "Tenure",
  "links": [
   {
    "dependencies": "",
@@ -164,6 +164,6 @@
   }
  ],
  "standard": 1,
- "title": "Employees",
+ "title": "Tenure",
  "type": "Workspace"
 }

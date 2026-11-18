@@ -11,7 +11,7 @@
  "icon": "wallet",
  "idx": 2,
  "is_hidden": 0,
- "label": "Payroll & Salaries",
+ "label": "Payroll",
  "links": [
   {
    "dependencies": "",
@@ -188,6 +188,6 @@
   }
  ],
  "standard": 1,
- "title": "Payroll & Salaries",
+ "title": "Payroll",
  "type": "Workspace"
 }

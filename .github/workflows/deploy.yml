@@ -246,26 +246,8 @@ jobs:
                     except Exception as e:
                         print("Component note:", e)
 
-            # 7. Remove all test/demo users and employees (except Administrator and Guest) so user can start 100% fresh
-            safe_users = ["Administrator", "Guest"]
-            all_users = frappe.get_all("User", fields=["name"])
-            for u in all_users:
-                if u.name not in safe_users:
-                    try:
-                        emp = frappe.db.get_value("Employee", {"user_id": u.name}, "name")
-                        if emp:
-                            frappe.delete_doc("Employee", emp, force=1, ignore_permissions=True)
-                        frappe.delete_doc("User", u.name, force=1, ignore_permissions=True)
-                        print("Deleted user:", u.name)
-                    except Exception as e:
-                        print("User cleanup note:", e)
-
-            for emp_name in frappe.get_all("Employee", pluck="name"):
-                try:
-                    frappe.delete_doc("Employee", emp_name, force=1, ignore_permissions=True)
-                except Exception:
-                    pass
-            print("All test users and employees wiped clean for fresh start!")
+            # 7. Seed standard Roles and Profiles (Data Preservation Enabled)
+            print("Preserving all user and employee data during deployment.")
 
             # 8. Clean and Restructure Sidebar Workspaces (Pure HRMS Navigation)
             hidden_workspaces = [
@@ -308,7 +290,8 @@ jobs:
             # 10. Enrich Tenure (renamed Employees) Workspace
             if frappe.db.exists("Workspace", "Tenure"):
                 ws_tenure = frappe.get_doc("Workspace", "Tenure")
-                ws_tenure.label = "Employees"
+                ws_tenure.label = "Tenure"
+                ws_tenure.title = "Tenure"
                 ws_tenure.shortcuts = []
                 ws_tenure.links = []
 

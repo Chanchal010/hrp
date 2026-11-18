@@ -211,3 +211,55 @@ def get_retirement_date(date_of_birth: str | None = None):
 		except ValueError:
 			# invalid date
 			return
+
+
+@frappe.whitelist()
+def create_employee_portal_user(employee: str, email: str, email_type: str = "Company Email", password: str | None = None, roles=None):
+	"""Create portal login user for employee, set password, assign roles, and link employee"""
+	if not frappe.has_permission("Employee", "write", doc=employee):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	emp = frappe.get_doc("Employee", employee)
+
+	# Set email on employee if not set
+	field = "company_email" if email_type == "Company Email" else "personal_email"
+	emp.set(field, email)
+	emp.prefered_contact_email = email_type
+	emp.prefered_email = email
+	emp.save(ignore_permissions=True)
+
+	user_name = email.strip()
+	if not frappe.db.exists("User", user_name):
+		user = frappe.new_doc("User")
+		user.email = user_name
+		user.first_name = emp.first_name or "Employee"
+		user.last_name = emp.last_name or ""
+		user.user_type = "System User"
+		user.send_welcome_email = 0
+		user.flags.no_welcome_mail = True
+		user.append("roles", {"role": "Employee"})
+		user.append("roles", {"role": "Desk User"})
+
+		if roles:
+			if isinstance(roles, str):
+				import json
+				try:
+					roles = json.loads(roles)
+				except Exception:
+					roles = [roles]
+			for r in roles:
+				if frappe.db.exists("Role", r) and not any(d.role == r for d in user.roles):
+					user.append("roles", {"role": r})
+
+		user.insert(ignore_permissions=True)
+	else:
+		user = frappe.get_doc("User", user_name)
+
+	if password:
+		from frappe.utils.password import update_password
+		update_password(user.name, password)
+
+	emp.db_set("user_id", user.name)
+	frappe.db.commit()
+
+	return {"user": user.name, "message": _("User account created and linked successfully")}
