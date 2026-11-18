@@ -56,16 +56,6 @@ jobs:
             yarn build
 
             cd /home/frappe/frappe-bench
-            echo "Ensuring HRMS app is installed on site..."
-            bench --site hrp.servicedialtm.com console << 'EOF'
-            import frappe
-            for m in ['HR Setup', 'Tenure', 'Recruitment', 'Shift and Attendance', 'Leaves', 'Expenses', 'Performance', 'Payroll', 'Tax and Benefits', 'HR']:
-                if frappe.db.exists('Module Def', m):
-                    frappe.db.delete('Module Def', m)
-            frappe.db.commit()
-            EOF
-            bench --site hrp.servicedialtm.com install-app hrms --force
-
             echo "Building Desk assets..."
             bench build --app hrms
 
@@ -94,11 +84,42 @@ jobs:
             frappe.db.sql("UPDATE `tabOnboarding Step` SET is_complete = 1")
             print("Completed all workspace tutorial onboarding steps!")
 
-            # 3. Create pre-built Role Profiles for HR & Payroll
+            # 3. Ensure custom roles and pre-built Role Profiles exist
+            for r in ["Payroll Manager", "Payroll User"]:
+                if not frappe.db.exists("Role", r):
+                    rdoc = frappe.new_doc("Role")
+                    rdoc.role_name = r
+                    rdoc.desk_access = 1
+                    rdoc.insert(ignore_permissions=True)
+                    print("Created missing Role:", r)
+
+            # Ensure Payroll Manager has permissions to Payroll DocTypes
+            for dt in ["Salary Slip", "Salary Structure", "Salary Structure Assignment", "Payroll Entry", "Salary Component", "Additional Salary"]:
+                if frappe.db.exists("DocType", dt):
+                    if not frappe.db.exists("Custom DocPerm", {"parent": dt, "role": "Payroll Manager"}):
+                        try:
+                            p = frappe.new_doc("Custom DocPerm")
+                            p.parent = dt
+                            p.role = "Payroll Manager"
+                            p.read = 1
+                            p.write = 1
+                            p.create = 1
+                            p.submit = 1
+                            p.cancel = 1
+                            p.amend = 1
+                            p.report = 1
+                            p.insert(ignore_permissions=True)
+                        except Exception:
+                            pass
+
             profiles = {
+                "HR and Payroll Operations": [
+                    "HR Manager", "HR User", "Payroll Manager", "Payroll User",
+                    "Employee", "Desk User", "Leave Approver", "Expense Approver", "Interview Approver"
+                ],
                 "HR Manager": [
-                    "HR Manager", "HR User", "Employee", "Desk User", 
-                    "Leave Approver", "Expense Approver", "Interview Approver"
+                    "HR Manager", "HR User", "Payroll Manager", "Payroll User",
+                    "Employee", "Desk User", "Leave Approver", "Expense Approver", "Interview Approver"
                 ],
                 "Payroll Manager": [
                     "Payroll Manager", "Payroll User", "Accounts User", 
@@ -262,16 +283,16 @@ jobs:
                     frappe.db.set_value("Workspace", ws_name, "is_hidden", 1)
             print("Hidden non-HR ERP clutter from sidebar!")
 
-            # Rename & re-sequence HR workspaces
+            # Rename & re-sequence HR workspaces (Module must be 'HR' so non-admin users have valid allowed_modules)
             hr_workspace_map = {
-                "HR Setup": {"label": "HR Setup", "icon": "rocket", "seq": 1.0},
-                "Tenure": {"label": "Tenure", "icon": "users", "seq": 2.0},
-                "Shift & Attendance": {"label": "Shift & Attendance", "icon": "clock", "seq": 3.0},
-                "Leaves": {"label": "Leaves", "icon": "calendar", "seq": 4.0},
-                "Payroll": {"label": "Payroll", "icon": "wallet", "seq": 5.0},
-                "Recruitment": {"label": "Recruitment", "icon": "user-check", "seq": 6.0},
-                "Expenses": {"label": "Expenses", "icon": "receipt", "seq": 7.0},
-                "Users": {"label": "Users", "icon": "shield", "seq": 8.0}
+                "HR Setup": {"label": "HR Setup", "icon": "rocket", "seq": 1.0, "module": "HR"},
+                "Tenure": {"label": "Tenure", "icon": "users", "seq": 2.0, "module": "HR"},
+                "Shift & Attendance": {"label": "Shift & Attendance", "icon": "clock", "seq": 3.0, "module": "HR"},
+                "Leaves": {"label": "Leaves", "icon": "calendar", "seq": 4.0, "module": "HR"},
+                "Payroll": {"label": "Payroll", "icon": "wallet", "seq": 5.0, "module": "Payroll"},
+                "Recruitment": {"label": "Recruitment", "icon": "user-check", "seq": 6.0, "module": "HR"},
+                "Expenses": {"label": "Expenses", "icon": "receipt", "seq": 7.0, "module": "HR"},
+                "Users": {"label": "Users", "icon": "shield", "seq": 8.0, "module": "Core"}
             }
             for ws_name, conf in hr_workspace_map.items():
                 if frappe.db.exists("Workspace", ws_name):
@@ -279,6 +300,7 @@ jobs:
                     frappe.db.set_value("Workspace", ws_name, "label", conf["label"])
                     frappe.db.set_value("Workspace", ws_name, "icon", conf["icon"])
                     frappe.db.set_value("Workspace", ws_name, "sequence_id", conf["seq"])
+                    frappe.db.set_value("Workspace", ws_name, "module", conf["module"])
                     frappe.db.set_value("Workspace", ws_name, "is_hidden", 0)
             print("Renamed and re-ordered HR workspaces!")
 
@@ -333,9 +355,8 @@ jobs:
                 ws_tenure.save(ignore_permissions=True)
                 print("Configured Employees workspace!")
 
-            # Clear all stale sessions so deleted test users don't cause 500 errors in browsers
-            frappe.db.sql("DELETE FROM `tabSessions`")
-            print("Cleared all stale user sessions!")
+            # Maintain active user sessions across deployments
+            print("Preserving active user sessions across deployment.")
 
             frappe.db.commit()
             print("Branding, Onboarding dismissal, and Role Profiles committed successfully!")
