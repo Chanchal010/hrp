@@ -227,7 +227,7 @@ def get_remaining_leaves(allocation):
 			"to_date": ("<=", allocation.to_date),
 			"docstatus": 1,
 		},
-		fieldname=[{"SUM": "leaves"}],
+		fieldname="sum(leaves)",
 	)
 
 

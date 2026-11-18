@@ -699,10 +699,9 @@ def get_total_reimbursed_amount(doc):
 			"Payment Entry Reference",
 			{
 				"reference_name": doc.name,
-				"advance_voucher_type": None,
 				"docstatus": 1,
 			},
-			[{"SUM": "allocated_amount"}],
+			"sum(allocated_amount)",
 		)
 
 		return flt(amount_via_jv) + flt(amount_via_payment_entry)

@@ -437,7 +437,7 @@ class IncomeTaxComputationReport:
 						"company": self.filters.company,
 						"docstatus": 1,
 					},
-					fields=[{"SUM": "amount", "as": "total_amount"}],
+					fields=["sum(amount) as total_amount"],
 				)[0].total_amount
 				or 0.0
 			)
