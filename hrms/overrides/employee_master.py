@@ -260,6 +260,16 @@ def create_employee_portal_user(employee: str, email: str, email_type: str = "Co
 		update_password(user.name, password)
 
 	emp.db_set("user_id", user.name)
+
+	# Ensure User Permission links user to this employee
+	if not frappe.db.exists("User Permission", {"user": user.name, "allow": "Employee", "for_value": emp.name}):
+		frappe.db.sql("DELETE FROM `tabUser Permission` WHERE user = %s AND allow = 'Employee'", (user.name,))
+		up = frappe.new_doc("User Permission")
+		up.user = user.name
+		up.allow = "Employee"
+		up.for_value = emp.name
+		up.insert(ignore_permissions=True)
+
 	frappe.db.commit()
 
 	return {"user": user.name, "message": _("User account created and linked successfully")}
