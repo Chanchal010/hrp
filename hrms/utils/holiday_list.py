@@ -28,7 +28,10 @@ def get_holiday_dates_between(
 		query = query.where(Holiday.weekly_off == 0)
 
 	if only_half_days:
-		query = query.where(Holiday.is_half_day == 1)
+		if frappe.db.has_column("Holiday", "is_half_day"):
+			query = query.where(Holiday.is_half_day == 1)
+		else:
+			return []
 
 	if as_dict:
 		return query.run(as_dict=True)
@@ -286,7 +289,7 @@ def throw_no_holiday_list_assigned(employee: str, company: str, as_on: date):
 			frappe.bold(employee),
 			frappe.bold(company),
 			frappe.bold(formatdate(as_on)),
-			get_link_to_form("Holiday List Assignment", label="Holiday List Assignment"),
+			get_link_to_form("Holiday List Assignment", "Holiday List Assignment", label="Holiday List Assignment"),
 		)
 	)
 
