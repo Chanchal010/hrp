@@ -73,7 +73,13 @@ hrms.EmployeeOverview = class EmployeeOverview {
 	async show() {
 		if (this.frm.get_active_tab()?.df.fieldname !== "overview_tab") return;
 		if (!this.needs_refresh) return;
-		await frappe.require(["desk_charts.bundle.js", "desk_charts.bundle.css"]);
+		if (typeof frappe.Chart === "undefined") {
+			try {
+				await frappe.require(["desk_charts.bundle.js", "desk_charts.bundle.css"]);
+			} catch (e) {
+				// charts fallback
+			}
+		}
 		if (this.frm.get_active_tab()?.df.fieldname !== "overview_tab" || !this.needs_refresh)
 			return;
 		this.needs_refresh = false;
@@ -137,12 +143,9 @@ hrms.EmployeeOverview = class EmployeeOverview {
 
 		this.build_recent();
 		const employee = this.employee;
-		frappe
-			.require("embedded_list.bundle.js")
-			.then(() => employee === this.employee && this.build_list())
-			.catch((e) =>
-				console.error("Employee Overview: failed to load embedded_list.bundle.js", e),
-			);
+		if (frappe.ui.EmbeddedList) {
+			if (employee === this.employee) this.build_list();
+		}
 	}
 
 	check_activity() {
@@ -235,7 +238,26 @@ hrms.EmployeeOverview = class EmployeeOverview {
 	show_empty(opts) {
 		this.$body.hide();
 		this.$header.hide();
-		this.$empty.empty().append(frappe.ui.empty_state(opts)).show();
+		if (frappe.ui.empty_state) {
+			this.$empty.empty().append(frappe.ui.empty_state(opts)).show();
+		} else {
+			let $box = $(`
+				<div class="text-center text-muted" style="padding: 40px 20px;">
+					<div style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">${frappe.utils.escape_html(opts.title || "")}</div>
+					<div style="font-size: 13px; color: var(--text-muted);">${frappe.utils.escape_html(opts.description || "")}</div>
+				</div>
+			`);
+			if (opts.actions && opts.actions.length) {
+				let $btns = $('<div style="margin-top: 15px;"></div>').appendTo($box);
+				opts.actions.forEach((act) => {
+					$('<button class="btn btn-default btn-sm" style="margin: 0 4px;">')
+						.text(act.label || "")
+						.on("click", act.onclick)
+						.appendTo($btns);
+				});
+			}
+			this.$empty.empty().append($box).show();
+		}
 	}
 
 	get data() {
@@ -617,9 +639,12 @@ hrms.EmployeeOverview = class EmployeeOverview {
 	show_state($panel, height, error_text, section) {
 		if (!this.overview || this.overview.loading) {
 			$panel.attr("aria-busy", "true");
+			const skeleton_el = frappe.ui.skeleton
+				? frappe.ui.skeleton({ width: "100%", height: "100%" })
+				: $('<div style="width: 100%; height: 100%; min-height: 40px; background: rgba(0,0,0,0.05); border-radius: 4px;"></div>');
 			$('<div class="eo-placeholder">')
 				.css("height", height)
-				.append(frappe.ui.skeleton({ width: "100%", height: "100%" }))
+				.append(skeleton_el)
 				.appendTo($panel);
 			return true;
 		}

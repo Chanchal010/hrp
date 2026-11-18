@@ -4,13 +4,60 @@ from frappe.query_builder import Case, DocType
 from frappe.query_builder.functions import Coalesce, Count, Sum
 from frappe.utils import add_months, cint, flt, getdate, today
 
-from erpnext.selling.doctype.customer.customer_overview import (
-	PERIODS,
-	pct_change,
-	permitted,
-	resolve_period,
-)
 from erpnext.setup.utils import get_exchange_rate
+
+PERIODS = ("Current Fiscal Year", "Last 12 Months", "This Quarter", "Last Fiscal Year")
+
+
+def pct_change(value, prev_value):
+	if not prev_value:
+		return 0.0
+	return flt((flt(value) - flt(prev_value)) / flt(prev_value) * 100, 2)
+
+
+def permitted(doctype, filters=None, fields=None, group_by=None, order_by=None, limit=None):
+	if not frappe.has_permission(doctype, "read"):
+		return []
+	return frappe.get_list(
+		doctype,
+		filters=filters,
+		fields=fields,
+		group_by=group_by,
+		order_by=order_by,
+		limit=limit,
+	)
+
+
+def resolve_period(period, company, as_of=None):
+	from frappe.utils import add_months, add_years, get_last_day, getdate, today
+
+	if not as_of:
+		as_of = getdate(today())
+	else:
+		as_of = getdate(as_of)
+
+	try:
+		from erpnext.accounts.utils import get_fiscal_year
+
+		if period == "Current Fiscal Year":
+			fy = get_fiscal_year(date=as_of, company=company)
+			return getdate(fy[1]), getdate(fy[2])
+		elif period == "Last Fiscal Year":
+			prev_year_date = add_years(as_of, -1)
+			fy = get_fiscal_year(date=prev_year_date, company=company)
+			return getdate(fy[1]), getdate(fy[2])
+	except Exception:
+		pass
+
+	if period == "Last 12 Months":
+		return add_months(as_of, -12), as_of
+	elif period == "This Quarter":
+		quarter_start_month = ((as_of.month - 1) // 3) * 3 + 1
+		start_date = as_of.replace(month=quarter_start_month, day=1)
+		end_date = get_last_day(add_months(start_date, 2))
+		return start_date, end_date
+	else:
+		return as_of.replace(month=1, day=1), as_of.replace(month=12, day=31)
 
 ATTENDANCE_STATUS = ("Present", "Work From Home", "Half Day", "On Leave", "Absent")
 UNPAID_CLAIM_STATUS = ("Unpaid", "Partially Paid")
