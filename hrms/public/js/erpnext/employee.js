@@ -1,6 +1,16 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+if (typeof moment !== "undefined") {
+	moment.suppressDeprecationWarnings = true;
+}
+
+$(document).on("hide.bs.modal hidden.bs.modal", ".modal", function () {
+	if (document.activeElement && this.contains(document.activeElement)) {
+		document.activeElement.blur();
+	}
+});
+
 const assignable_masters = {};
 
 function get_assignment_actions() {

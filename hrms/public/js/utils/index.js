@@ -1,5 +1,16 @@
 frappe.provide("hrms");
 
+// Silence third-party library deprecations and Chrome modal focus retention warnings
+if (typeof moment !== "undefined") {
+	moment.suppressDeprecationWarnings = true;
+}
+
+$(document).on("hide.bs.modal hidden.bs.modal", ".modal", function () {
+	if (document.activeElement && this.contains(document.activeElement)) {
+		document.activeElement.blur();
+	}
+});
+
 $.extend(hrms, {
 	proceed_save_with_reminders_frequency_change: () => {
 		frappe.ui.hide_open_dialog();
