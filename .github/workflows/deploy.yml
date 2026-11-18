@@ -93,24 +93,13 @@ jobs:
                     rdoc.insert(ignore_permissions=True)
                     print("Created missing Role:", r)
 
-            # Ensure Payroll Manager has permissions to Payroll DocTypes
-            for dt in ["Salary Slip", "Salary Structure", "Salary Structure Assignment", "Payroll Entry", "Salary Component", "Additional Salary"]:
+            # Reset any custom permissions to restore pure standard DocPerms
+            frappe.db.sql("DELETE FROM `tabCustom DocPerm`")
+            for dt in ["Salary Slip", "Salary Structure", "Salary Structure Assignment", "Payroll Entry", "Salary Component", "Additional Salary", "Employee", "Attendance", "Leave Application", "Expense Claim"]:
                 if frappe.db.exists("DocType", dt):
-                    if not frappe.db.exists("Custom DocPerm", {"parent": dt, "role": "Payroll Manager"}):
-                        try:
-                            p = frappe.new_doc("Custom DocPerm")
-                            p.parent = dt
-                            p.role = "Payroll Manager"
-                            p.read = 1
-                            p.write = 1
-                            p.create = 1
-                            p.submit = 1
-                            p.cancel = 1
-                            p.amend = 1
-                            p.report = 1
-                            p.insert(ignore_permissions=True)
-                        except Exception:
-                            pass
+                    frappe.reset_perms(dt)
+            frappe.clear_cache()
+            print("Reset and restored standard DocPerms from fixtures!")
 
             profiles = {
                 "HR and Payroll Operations": [

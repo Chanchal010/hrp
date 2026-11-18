@@ -2488,7 +2488,7 @@ class SalarySlip(TransactionBase):
 
 		salary_slip_sum = frappe.get_list(
 			"Salary Slip",
-			fields=[{"SUM": "net_pay", "as": "net_sum"}, {"SUM": "gross_pay", "as": "gross_sum"}],
+			fields=["sum(net_pay) as net_sum", "sum(gross_pay) as gross_sum"],
 			filters={
 				"employee": self.employee,
 				"start_date": [">=", period_start_date],
@@ -2511,7 +2511,7 @@ class SalarySlip(TransactionBase):
 		first_day_of_the_month = get_first_day(self.start_date)
 		salary_slip_sum = frappe.get_list(
 			"Salary Slip",
-			fields=[{"SUM": "net_pay", "as": "sum"}],
+			fields=["sum(net_pay) as sum"],
 			filters={
 				"employee": self.employee,
 				"start_date": [">=", first_day_of_the_month],
